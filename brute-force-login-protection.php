@@ -10,7 +10,7 @@ require_once 'includes/htaccess.php';
  * Text Domain: brute-force-login-protection
  * Author: Fresh-Media
  * Author URI: http://fresh-media.nl/
- * Version: 1.4.1
+ * Version: 1.5
  * License: GPL2
  * 
  * Copyright 2014  Fresh-Media
@@ -348,13 +348,13 @@ class BruteForceLoginProtection {
      */
     private function __setDefaultOptions() {
         $this->__options = array(
-            'allowed_attempts' => 20, //Allowed login attempts before deny,
-            'reset_time' => 60, //Minutes before resetting login attempts count
+            'allowed_attempts'   => 20, //Allowed login attempts before deny,
+            'reset_time'         => 60, //Minutes before resetting login attempts count
             'login_failed_delay' => 1, //Delay in seconds when a user login has failed
-            'inform_user' => true, //Inform user about remaining login attempts on login page
-            'send_email' => false, //Send email to administrator when an IP has been blocked
-            '403_message' => '', //Message to show to a blocked user
-            'htaccess_dir' => get_home_path() //.htaccess file location
+            'inform_user'        => true, //Inform user about remaining login attempts on login page
+            'send_email'         => false, //Send email to administrator when an IP has been blocked
+            '403_message'        => '', //Message to show to a blocked user
+            'htaccess_dir'       => get_home_path() //.htaccess file location
         );
     }
 

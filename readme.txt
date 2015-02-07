@@ -2,14 +2,15 @@
 Contributors: Jan-Paul Kleemans
 Tags: brute force, bruteforce, login, wp-login, protection, shield, security, htaccess, block, ip
 Requires at least: 2.7.0
-Tested up to: 4.0
+Tested up to: 4.1
 Stable tag: 1.4.1
 License: GPL2
 
 Protects your website against brute force login attacks using .htaccess
 
 == Description ==
-A Brute Force Attack aims at being the simplest kind of method to gain access to a site: it tries usernames and passwords, over and over again, until it gets in. Brute Force Login Protection protects your website against brute force login attacks using .htaccess.
+A Brute Force Attack aims at being the simplest kind of method to gain access to a site: it tries usernames and passwords, over and over again, until it gets in.
+Brute Force Login Protection is a lightweight plugin that protects your website against brute force login attacks using .htaccess.
 
 After a specified limit of login attempts within a specified time, the IP address of the hacker will be blocked.
 
@@ -44,6 +45,9 @@ Brute Force Login Protection will only work if your .htaccess file is writeable 
 1. Plugin settings page
 
 == Changelog ==
+= 1.5 =
+* Improved stability
+
 = 1.4.1 =
 * Option to email administrator when an IP has been blocked
 * Button to whitelist your current IP

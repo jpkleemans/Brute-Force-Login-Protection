@@ -1,7 +1,5 @@
 <?php
 
-require_once ABSPATH . '/wp-admin/includes/misc.php';
-
 class Htaccess {
 
     private $__path;
@@ -29,8 +27,8 @@ class Htaccess {
      */
     public function checkRequirements() {
         $status = array(
-            'found' => false,
-            'readable' => false,
+            'found'     => false,
+            'readable'  => false,
             'writeable' => false
         );
 
@@ -107,7 +105,7 @@ class Htaccess {
 
         $insertion = array_merge($this->__header, array($line), $otherLines, $this->__footer);
 
-        return insert_with_markers($this->__path, 'Brute Force Login Protection', $insertion);
+        return $this->__insert($insertion);
     }
 
     /**
@@ -132,7 +130,7 @@ class Htaccess {
             $insertion[] = '#' . $line;
         }
 
-        return insert_with_markers($this->__path, 'Brute Force Login Protection', $insertion);
+        return $this->__insert($insertion);
     }
 
     /**
@@ -150,7 +148,7 @@ class Htaccess {
 
         $insertion = array_merge($this->__header, $lines, $this->__footer);
 
-        return insert_with_markers($this->__path, 'Brute Force Login Protection', $insertion);
+        return $this->__insert($insertion);
     }
 
     /**
@@ -164,7 +162,7 @@ class Htaccess {
      * @return array
      */
     private function __getLines($prefixes = false, $onlyBody = false, $exceptPrefix = false) {
-        $allLines = extract_from_markers($this->__path, 'Brute Force Login Protection');
+        $allLines = $this->__extract();
 
         if ($onlyBody) {
             $allLines = array_diff($allLines, $this->__header, $this->__footer);
@@ -203,7 +201,7 @@ class Htaccess {
     private function __addLine($line) {
         $insertion = array_merge($this->__header, $this->__getLines(false, true), array($line), $this->__footer);
 
-        return insert_with_markers($this->__path, 'Brute Force Login Protection', array_unique($insertion));
+        return $this->__insert(array_unique($insertion));
     }
 
     /**
@@ -235,7 +233,110 @@ class Htaccess {
 
         unset($insertion[$lineKey]);
 
-        return insert_with_markers($this->__path, 'Brute Force Login Protection', $insertion);
+        return $this->__insert($insertion);
+    }
+
+    /**
+     * Returns array of strings from between BEGIN and END markers from .htaccess.
+     * 
+     * @return array Array of strings from between BEGIN and END markers from .htaccess.
+     */
+    private function __extract() {
+        $marker = 'Brute Force Login Protection';
+
+        $result = array();
+
+        if (!file_exists($this->__path)) {
+            return $result;
+        }
+
+        if ($markerdata = explode("\n", implode('', file($this->__path)))) {
+            $state = false;
+            foreach ($markerdata as $markerline) {
+                if (strpos($markerline, '# END ' . $marker) !== false) {
+                    $state = false;
+                }
+                if ($state) {
+                    $result[] = $markerline;
+                }
+                if (strpos($markerline, '# BEGIN ' . $marker) !== false) {
+                    $state = true;
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Inserts an array of strings into .htaccess, placing it between
+     * BEGIN and END markers. Replaces existing marked info. Retains surrounding
+     * data. Creates file if none exists.
+     *
+     * @param string $insertion
+     * @return bool True on write success, false on failure.
+     */
+    private function __insert($insertion) {
+        $marker = 'Brute Force Login Protection';
+
+        if (!file_exists($this->__path) || is_writeable($this->__path)) {
+            if (!file_exists($this->__path)) {
+                $markerdata = '';
+            } else {
+                $markerdata = explode("\n", implode('', file($this->__path)));
+            }
+
+            $newContent = '';
+
+            $foundit = false;
+            if ($markerdata) {
+                $lineCount = count($markerdata);
+
+                $state = true;
+                foreach ($markerdata as $n => $markerline) {
+                    if (strpos($markerline, '# BEGIN ' . $marker) !== false) {
+                        $state = false;
+                    }
+
+                    if ($state) { //Non-BFLP lines
+                        if ($n + 1 < $lineCount) {
+                            $newContent .= "{$markerline}\n";
+                        } else {
+                            $newContent .= "{$markerline}";
+                        }
+                    }
+
+                    if (strpos($markerline, '# END ' . $marker) !== false) {
+                        $newContent .= "# BEGIN {$marker}\n";
+                        if (is_array($insertion)) {
+                            foreach ($insertion as $insertline) {
+                                $newContent .= "{$insertline}\n";
+                            }
+                        }
+                        $newContent .= "# END {$marker}\n";
+
+                        $state = true;
+                        $foundit = true;
+                    }
+                }
+
+                if ($state === false) { //If BEGIN marker found but missing END marker
+                    return false;
+                }
+            }
+
+            if (!$foundit) {
+                $newContent .= "\n# BEGIN {$marker}\n";
+                foreach ($insertion as $insertline) {
+                    $newContent .= "{$insertline}\n";
+                }
+                $newContent .= "# END {$marker}\n";
+            }
+
+            return file_put_contents($this->__path, $newContent, LOCK_EX);
+        } else {
+            return false;
+        }
     }
 
 }
