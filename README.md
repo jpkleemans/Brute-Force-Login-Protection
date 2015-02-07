@@ -18,8 +18,6 @@ After a specified limit of login attempts within a specified time, the IP addres
 * Option to email administrator when an IP has been blocked
 * Custom message to show to blocked users
 
-Your feedback is highly appreciated!
-
 ## Installation
 1. Install the plugin either via the WordPress.org plugin directory, or by uploading the files to your wp-content/plugin directory.
 2. Activate the plugin through the WordPress admin panel.
@@ -33,6 +31,11 @@ If you don't have FTP access, the only way to unblock your IP is to log in your 
 
 ### I get an error: .htaccess file not readable/writeable
 Brute Force Login Protection will only work if your .htaccess file is writeable by WordPress. If you get this error, make sure that your .htaccess file has read and write permissions.
+
+## Contribute
+If you'd like to make a contribution to the Brute Force Login Protection plugin, you can submit a pull request to our <a href="https://github.com/jpkleemans/Brute-Force-Login-Protection/">GitHub Repository</a>.
+You can also create a thread in our <a href="https://wordpress.org/support/plugin/brute-force-login-protection/">Support Forum</a>.
+**Your feedback is highly appreciated!**
 
 ## Changelog
 ### 1.5

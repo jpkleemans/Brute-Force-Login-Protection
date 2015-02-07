@@ -14,7 +14,7 @@ Brute Force Login Protection is a lightweight plugin that protects your website 
 
 After a specified limit of login attempts within a specified time, the IP address of the hacker will be blocked.
 
-Features
+= Features =
 
 * Limit the number of allowed login attempts using normal login form
 * Limit the number of allowed login attempts using Auth Cookies
@@ -25,7 +25,10 @@ Features
 * Option to email administrator when an IP has been blocked
 * Custom message to show to blocked users
 
-Your feedback is highly appreciated!
+= Contribute =
+If you'd like to make a contribution to the Brute Force Login Protection plugin, you can submit a pull request to our <a href="https://github.com/jpkleemans/Brute-Force-Login-Protection/">GitHub Repository</a>.
+You can also create a thread in our <a href="https://wordpress.org/support/plugin/brute-force-login-protection/">Support Forum</a>.
+**Your feedback is highly appreciated!**
 
 == Installation ==
 1. Install the plugin either via the WordPress.org plugin directory, or by uploading the files to your wp-content/plugin directory.
