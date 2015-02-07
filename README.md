@@ -33,8 +33,8 @@ If you don't have FTP access, the only way to unblock your IP is to log in your 
 Brute Force Login Protection will only work if your .htaccess file is writeable by WordPress. If you get this error, make sure that your .htaccess file has read and write permissions.
 
 ## Contribute
-If you'd like to make a contribution to the Brute Force Login Protection plugin, you can submit a pull request to our <a href="https://github.com/jpkleemans/Brute-Force-Login-Protection/">GitHub Repository</a>.
-You can also create a thread in our <a href="https://wordpress.org/support/plugin/brute-force-login-protection/">Support Forum</a>.
+If you'd like to make a contribution to the Brute Force Login Protection plugin, you can submit a pull request to our [GitHub Repository](https://github.com/jpkleemans/Brute-Force-Login-Protection/).
+You can also create a thread in our [Support Forum](https://wordpress.org/support/plugin/brute-force-login-protection/).
 **Your feedback is highly appreciated!**
 
 ## Changelog
