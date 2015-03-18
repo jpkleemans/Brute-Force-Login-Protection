@@ -94,7 +94,7 @@ class BruteForceLoginProtection
      */
     public function adminInit()
     {
-        // Register plugin settings
+        // Register plugin options
         $this->registerOptions();
 
         // Set htaccess path
@@ -198,14 +198,11 @@ class BruteForceLoginProtection
                     $this->showError(sprintf(__('An error occurred while removing IP %s from whitelist', 'brute-force-login-protection'), $IP));
                 }
             }
-        } elseif (isset($_POST['reset'])) { // Reset settings
-            $this->htaccess->remove403Message();
-            $this->deleteOptions();
-            $this->setDefaultOptions();
-            $this->setHtaccessPath();
-            $this->showMessage(sprintf(__('The Options have been successfully reset', 'brute-force-login-protection'), $IP));
+        } elseif (isset($_POST['reset'])) { // Reset options
+            $this->resetOptions();
         }
 
+        // Load options and show page
         $this->fillOptions();
         include 'includes/settings-page.php';
     }
@@ -227,22 +224,29 @@ class BruteForceLoginProtection
 
             sleep($this->options['login_failed_delay']);
 
+            // Get login attempts array from database
             $attempts = get_option('bflp_login_attempts');
+
+            // Create option in database if it doesn't exist
             if (!is_array($attempts)) {
                 $attempts = array();
                 add_option('bflp_login_attempts', $attempts, '', 'no');
             }
 
             $denyIP = false;
+
+            // Check if IP has failed login attempts within reset_time
             if ($IP && isset($attempts[$IP]) && $attempts[$IP]['time'] > (time() - ($this->options['reset_time'] * 60))) {
                 $attempts[$IP]['attempts'] ++;
+
+                // Check if IP has reached max failed login attempts
                 if ($attempts[$IP]['attempts'] >= $this->options['allowed_attempts']) {
                     $denyIP = true;
                     unset($attempts[$IP]);
                 } else {
                     $attempts[$IP]['time'] = time();
                 }
-            } else {
+            } else { // First failed login attempt of IP
                 $attempts[$IP]['attempts'] = 1;
                 $attempts[$IP]['time'] = time();
             }
@@ -250,13 +254,7 @@ class BruteForceLoginProtection
             update_option('bflp_login_attempts', $attempts);
 
             if ($denyIP) {
-                if ($this->options['send_email']) {
-                    $this->sendEmail($IP);
-                }
-                $this->setHtaccessPath();
-                $this->htaccess->denyIP($IP);
-                header('HTTP/1.0 403 Forbidden');
-                die($this->options['403_message']);
+                $this->blockIP($IP);
             }
 
             if ($this->options['inform_user']) {
@@ -277,8 +275,10 @@ class BruteForceLoginProtection
     public function loginSucceeded()
     {
         $attempts = get_option('bflp_login_attempts');
+
         if (is_array($attempts)) {
             $IP = $this->getClientIP();
+
             if (isset($attempts[$IP])) {
                 unset($attempts[$IP]);
                 update_option('bflp_login_attempts', $attempts);
@@ -296,15 +296,16 @@ class BruteForceLoginProtection
     {
         if (is_numeric($input) && ($input >= 1 && $input <= 100)) {
             return $input;
-        } else {
-            add_settings_error(
-                    'bflp_allowed_attempts', // Setting slug
-                    'bflp_allowed_attempts', // Error slug
-                    __('Allowed login attempts must be a number (between 1 and 100)', 'brute-force-login-protection') // Message
-            );
-            $this->fillOption('allowed_attempts');
-            return $this->options['allowed_attempts'];
         }
+
+        add_settings_error(
+                'bflp_allowed_attempts', // Setting slug
+                'bflp_allowed_attempts', // Error slug
+                __('Allowed login attempts must be a number (between 1 and 100)', 'brute-force-login-protection') // Message
+        );
+
+        $this->fillOption('allowed_attempts');
+        return $this->options['allowed_attempts'];
     }
 
     /**
@@ -317,15 +318,16 @@ class BruteForceLoginProtection
     {
         if (is_numeric($input) && $input >= 1) {
             return $input;
-        } else {
-            add_settings_error(
-                    'bflp_reset_time', // Setting slug
-                    'bflp_reset_time', // Error slug
-                    __('Minutes before resetting must be a number (higher than 1)', 'brute-force-login-protection') // Message
-            );
-            $this->fillOption('reset_time');
-            return $this->options['reset_time'];
         }
+
+        add_settings_error(
+                'bflp_reset_time', // Setting slug
+                'bflp_reset_time', // Error slug
+                __('Minutes before resetting must be a number (higher than 1)', 'brute-force-login-protection') // Message
+        );
+
+        $this->fillOption('reset_time');
+        return $this->options['reset_time'];
     }
 
     /**
@@ -338,15 +340,16 @@ class BruteForceLoginProtection
     {
         if (is_numeric($input) && ($input >= 1 && $input <= 10)) {
             return $input;
-        } else {
-            add_settings_error(
-                    'bflp_login_failed_delay', // Setting slug
-                    'bflp_login_failed_delay', // Error slug
-                    __('Failed login delay must be a number (between 1 and 10)', 'brute-force-login-protection') // Message
-            );
-            $this->fillOption('login_failed_delay');
-            return $this->options['login_failed_delay'];
         }
+
+        add_settings_error(
+                'bflp_login_failed_delay', // Setting slug
+                'bflp_login_failed_delay', // Error slug
+                __('Failed login delay must be a number (between 1 and 10)', 'brute-force-login-protection') // Message
+        );
+
+        $this->fillOption('login_failed_delay');
+        return $this->options['login_failed_delay'];
     }
 
     /**
@@ -361,15 +364,16 @@ class BruteForceLoginProtection
 
         if ($this->htaccess->edit403Message($message)) {
             return $message;
-        } else {
-            add_settings_error(
-                    'bflp_403_message', // Setting slug
-                    'bflp_403_message', // Error slug
-                    __('An error occurred while saving the blocked users message', 'brute-force-login-protection') // Message
-            );
-            $this->fillOption('403_message');
-            return $this->options['403_message'];
         }
+
+        add_settings_error(
+                'bflp_403_message', // Setting slug
+                'bflp_403_message', // Error slug
+                __('An error occurred while saving the blocked users message', 'brute-force-login-protection') // Message
+        );
+
+        $this->fillOption('403_message');
+        return $this->options['403_message'];
     }
 
     /**
@@ -444,6 +448,20 @@ class BruteForceLoginProtection
     }
 
     /**
+     * Reset options to their default value
+     * 
+     * @return void
+     */
+    private function resetOptions()
+    {
+        $this->htaccess->remove403Message();
+        $this->deleteOptions();
+        $this->setDefaultOptions();
+        $this->setHtaccessPath();
+        $this->showMessage(__('The Options have been successfully reset', 'brute-force-login-protection'));
+    }
+
+    /**
      * Delete options from database.
      * 
      * @return void
@@ -460,6 +478,24 @@ class BruteForceLoginProtection
     }
 
     /**
+     * Deny IP with .htaccess and show forbidden message
+     * 
+     * @param string $IP
+     */
+    private function blockIP($IP)
+    {
+        if ($this->options['send_email']) {
+            $this->sendEmail($IP);
+        }
+
+        $this->setHtaccessPath();
+        $this->htaccess->denyIP($IP);
+
+        header('HTTP/1.0 403 Forbidden');
+        die($this->options['403_message']);
+    }
+
+    /**
      * Return array of whitelisted IP addresses.
      * 
      * @return array
@@ -468,9 +504,7 @@ class BruteForceLoginProtection
     {
         $whitelist = get_option('bflp_whitelist');
 
-        if (!is_array($whitelist)) {
-            return array();
-        }
+        if (!is_array($whitelist)) return array();
 
         return $whitelist;
     }
@@ -483,13 +517,13 @@ class BruteForceLoginProtection
      */
     private function whitelistIP($IP)
     {
-        if (!filter_var($IP, FILTER_VALIDATE_IP)) {
-            return false;
-        }
+        if (!filter_var($IP, FILTER_VALIDATE_IP)) return false;
 
         $this->htaccess->undenyIP($IP);
 
         $whitelist = get_option('bflp_whitelist');
+
+        // Create option in database if it doesn't exist
         if (!is_array($whitelist)) {
             $whitelist = array($IP);
             return add_option('bflp_whitelist', $whitelist, '', 'no');
@@ -508,20 +542,15 @@ class BruteForceLoginProtection
      */
     private function unwhitelistIP($IP)
     {
-        if (!filter_var($IP, FILTER_VALIDATE_IP)) {
-            return false;
-        }
+        if (!filter_var($IP, FILTER_VALIDATE_IP)) return false;
 
         $whitelist = get_option('bflp_whitelist');
-        if (!is_array($whitelist)) {
-            return false;
-        }
+
+        if (!is_array($whitelist)) return false;
 
         $IPKey = array_search($IP, $whitelist);
 
-        if ($IPKey === false) {
-            return false;
-        }
+        if ($IPKey === false) return false;
 
         unset($whitelist[$IPKey]);
 

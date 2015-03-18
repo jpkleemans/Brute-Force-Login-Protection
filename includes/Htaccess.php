@@ -88,9 +88,7 @@ class Htaccess
      */
     public function denyIP($IP)
     {
-        if (!filter_var($IP, FILTER_VALIDATE_IP)) {
-            return false;
-        }
+        if (!filter_var($IP, FILTER_VALIDATE_IP)) return false;
 
         return $this->addLine('deny from ' . $IP);
     }
@@ -103,9 +101,7 @@ class Htaccess
      */
     public function undenyIP($IP)
     {
-        if (!filter_var($IP, FILTER_VALIDATE_IP)) {
-            return false;
-        }
+        if (!filter_var($IP, FILTER_VALIDATE_IP)) return false;
 
         return $this->removeLine('deny from ' . $IP);
     }
@@ -118,9 +114,7 @@ class Htaccess
      */
     public function edit403Message($message)
     {
-        if (empty($message)) {
-            return $this->remove403Message();
-        }
+        if (empty($message)) return $this->remove403Message();
 
         $line = 'ErrorDocument 403 "' . $message . '"';
 
@@ -191,9 +185,7 @@ class Htaccess
             $allLines = array_diff($allLines, $this->header, $this->footer);
         }
 
-        if (!$prefixes) {
-            return $allLines;
-        }
+        if (!$prefixes) return $allLines;
 
         if (!is_array($prefixes)) {
             $prefixes = array($prefixes);
@@ -252,9 +244,7 @@ class Htaccess
             $lineKey = array_search($line, $insertion);
         }
 
-        if ($lineKey === false) {
-            return true;
-        }
+        if ($lineKey === false) return true;
 
         unset($insertion[$lineKey]);
 
@@ -272,9 +262,7 @@ class Htaccess
 
         $result = array();
 
-        if (!file_exists($this->path)) {
-            return $result;
-        }
+        if (!file_exists($this->path)) return $result;
 
         if ($markerdata = explode("\n", implode('', file($this->path)))) {
             $state = false;
@@ -347,9 +335,8 @@ class Htaccess
                     }
                 }
 
-                if ($state === false) { // If BEGIN marker found but missing END marker
-                    return false;
-                }
+                // If BEGIN marker found but missing END marker
+                if ($state === false) return false;
             }
 
             if (!$foundit) {
@@ -361,8 +348,8 @@ class Htaccess
             }
 
             return file_put_contents($this->path, $newContent, LOCK_EX);
-        } else {
-            return false;
         }
+
+        return false;
     }
 }
