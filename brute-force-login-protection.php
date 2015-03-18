@@ -492,7 +492,7 @@ class BruteForceLoginProtection
         $this->htaccess->denyIP($IP);
 
         header('HTTP/1.0 403 Forbidden');
-        die($this->options['403_message']);
+        wp_die($this->options['403_message']);
     }
 
     /**
