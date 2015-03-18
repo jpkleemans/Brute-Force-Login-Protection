@@ -1,7 +1,7 @@
 <?php
 
 require_once ABSPATH . '/wp-admin/includes/file.php';
-require_once 'includes/htaccess.php';
+require_once 'includes/Htaccess.php';
 
 /**
  * Plugin Name: Brute Force Login Protection
@@ -28,37 +28,50 @@ require_once 'includes/htaccess.php';
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-class BruteForceLoginProtection {
-
-    private $__options, $__htaccess;
+class BruteForceLoginProtection
+{
+    /**
+     * Options array
+     * 
+     * @var array 
+     */
+    private $options;
 
     /**
-     * Initializes $__options and $__htaccess.
-     * Interacts with WordPress hooks.
+     * Htaccess object
+     * 
+     * @var Htaccess
+     */
+    private $htaccess;
+
+    /**
+     * Initialize $options and $htaccess.
+     * Interact with WordPress hooks.
      * 
      * @return void
      */
-    public function __construct() {
-        //Default options
-        $this->__setDefaultOptions();
+    public function __construct()
+    {
+        // Set default options
+        $this->setDefaultOptions();
 
-        //Instantiate Htaccess class
-        $this->__htaccess = new Htaccess();
+        // Instantiate Htaccess class
+        $this->htaccess = new Htaccess();
 
-        //Activation and deactivation hooks
+        // Activation and deactivation hooks
         register_activation_hook(__FILE__, array($this, 'activate'));
         register_deactivation_hook(__FILE__, array($this, 'deactivate'));
 
-        //Init hooks
+        // Init hooks
         add_action('plugins_loaded', array($this, 'init'));
         add_action('admin_init', array($this, 'adminInit'));
         add_action('admin_menu', array($this, 'menuInit'));
 
-        //Login hooks
+        // Login hooks
         add_action('wp_login_failed', array($this, 'loginFailed'));
         add_action('wp_login', array($this, 'loginSucceeded'));
 
-        //Auth cookie hooks
+        // Auth cookie hooks
         add_action('auth_cookie_bad_username', array($this, 'loginFailed'));
         add_action('auth_cookie_bad_hash', array($this, 'loginFailed'));
     }
@@ -68,8 +81,9 @@ class BruteForceLoginProtection {
      * 
      * @return void
      */
-    public function init() {
-        //Load textdomain for i18n
+    public function init()
+    {
+        // Load textdomain for i18n
         load_plugin_textdomain('brute-force-login-protection', false, dirname(plugin_basename(__FILE__)) . '/languages/');
     }
 
@@ -78,14 +92,15 @@ class BruteForceLoginProtection {
      * 
      * @return void
      */
-    public function adminInit() {
-        //Register plugin settings
-        $this->__registerOptions();
+    public function adminInit()
+    {
+        // Register plugin settings
+        $this->registerOptions();
 
-        //Set htaccess path
-        $this->__setHtaccessPath();
+        // Set htaccess path
+        $this->setHtaccessPath();
 
-        //Call checkRequirements to check for .htaccess errors
+        // Call checkRequirements to check for .htaccess errors
         add_action('admin_notices', array($this, 'showRequirementsErrors'));
     }
 
@@ -94,9 +109,16 @@ class BruteForceLoginProtection {
      * 
      * @return void
      */
-    public function menuInit() {
-        //Add settings page to the Settings menu
-        add_options_page(__('Brute Force Login Protection Settings', 'brute-force-login-protection'), 'Brute Force Login Protection', 'manage_options', 'brute-force-login-protection', array($this, 'showSettingsPage'));
+    public function menuInit()
+    {
+        // Add settings page to the Settings menu
+        add_options_page(
+                __('Brute Force Login Protection Settings', 'brute-force-login-protection'), // Page title
+                   'Brute Force Login Protection', // Menu title
+                   'manage_options', // Required capability
+                   'brute-force-login-protection', // Menu slug
+                   array($this, 'showSettingsPage') // Content callback
+        );
     }
 
     /**
@@ -104,9 +126,10 @@ class BruteForceLoginProtection {
      * 
      * @return boolean
      */
-    public function activate() {
-        $this->__setHtaccessPath();
-        $this->__htaccess->uncommentLines();
+    public function activate()
+    {
+        $this->setHtaccessPath();
+        $this->htaccess->uncommentLines();
     }
 
     /**
@@ -114,90 +137,95 @@ class BruteForceLoginProtection {
      * 
      * @return boolean
      */
-    public function deactivate() {
-        $this->__htaccess->commentLines();
+    public function deactivate()
+    {
+        $this->htaccess->commentLines();
     }
 
     /**
-     * Checks requirements and shows errors
+     * Check requirements and shows errors
      * 
      * @return void
      */
-    public function showRequirementsErrors() {
-        $status = $this->__htaccess->checkRequirements();
+    public function showRequirementsErrors()
+    {
+        $status = $this->htaccess->checkRequirements();
 
         if (!$status['found']) {
-            $this->__showError(__('Brute Force Login Protection error: .htaccess file not found', 'brute-force-login-protection'));
+            $this->showError(__('Brute Force Login Protection error: .htaccess file not found', 'brute-force-login-protection'));
         } elseif (!$status['readable']) {
-            $this->__showError(__('Brute Force Login Protection error: .htaccess file not readable', 'brute-force-login-protection'));
+            $this->showError(__('Brute Force Login Protection error: .htaccess file not readable', 'brute-force-login-protection'));
         } elseif (!$status['writeable']) {
-            $this->__showError(__('Brute Force Login Protection error: .htaccess file not writeable', 'brute-force-login-protection'));
+            $this->showError(__('Brute Force Login Protection error: .htaccess file not writeable', 'brute-force-login-protection'));
         }
     }
 
     /**
-     * Shows settings page and handles user actions.
+     * Show settings page and handle user actions.
      * 
      * @return void
      */
-    public function showSettingsPage() {
+    public function showSettingsPage()
+    {
         if (isset($_POST['IP'])) {
             $IP = $_POST['IP'];
 
-            if (isset($_POST['block'])) { //Manually block IP
-                $whitelist = $this->__getWhitelist();
+            if (isset($_POST['block'])) { // Manually block IP
+                $whitelist = $this->getWhitelist();
                 if (in_array($IP, $whitelist)) {
-                    $this->__showError(sprintf(__('You can\'t block a whitelisted IP', 'brute-force-login-protection'), $IP));
-                } elseif ($this->__htaccess->denyIP($IP)) {
-                    $this->__showMessage(sprintf(__('IP %s blocked', 'brute-force-login-protection'), $IP));
+                    $this->showError(sprintf(__('You can\'t block a whitelisted IP', 'brute-force-login-protection'), $IP));
+                } elseif ($this->htaccess->denyIP($IP)) {
+                    $this->showMessage(sprintf(__('IP %s blocked', 'brute-force-login-protection'), $IP));
                 } else {
-                    $this->__showError(sprintf(__('An error occurred while blocking IP %s', 'brute-force-login-protection'), $IP));
+                    $this->showError(sprintf(__('An error occurred while blocking IP %s', 'brute-force-login-protection'), $IP));
                 }
-            } elseif (isset($_POST['unblock'])) { //Unblock IP
-                if ($this->__htaccess->undenyIP($IP)) {
-                    $this->__showMessage(sprintf(__('IP %s unblocked', 'brute-force-login-protection'), $IP));
+            } elseif (isset($_POST['unblock'])) { // Unblock IP
+                if ($this->htaccess->undenyIP($IP)) {
+                    $this->showMessage(sprintf(__('IP %s unblocked', 'brute-force-login-protection'), $IP));
                 } else {
-                    $this->__showError(sprintf(__('An error occurred while unblocking IP %s', 'brute-force-login-protection'), $IP));
+                    $this->showError(sprintf(__('An error occurred while unblocking IP %s', 'brute-force-login-protection'), $IP));
                 }
-            } elseif (isset($_POST['whitelist'])) { //Add IP to whitelist
-                if ($this->__whitelistIP($IP)) {
-                    $this->__showMessage(sprintf(__('IP %s added to whitelist', 'brute-force-login-protection'), $IP));
+            } elseif (isset($_POST['whitelist'])) { // Add IP to whitelist
+                if ($this->whitelistIP($IP)) {
+                    $this->showMessage(sprintf(__('IP %s added to whitelist', 'brute-force-login-protection'), $IP));
                 } else {
-                    $this->__showError(sprintf(__('An error occurred while adding IP %s to whitelist', 'brute-force-login-protection'), $IP));
+                    $this->showError(sprintf(__('An error occurred while adding IP %s to whitelist', 'brute-force-login-protection'), $IP));
                 }
-            } elseif (isset($_POST['unwhitelist'])) { //Remove IP from whitelist
-                if ($this->__unwhitelistIP($IP)) {
-                    $this->__showMessage(sprintf(__('IP %s removed from whitelist', 'brute-force-login-protection'), $IP));
+            } elseif (isset($_POST['unwhitelist'])) { // Remove IP from whitelist
+                if ($this->unwhitelistIP($IP)) {
+                    $this->showMessage(sprintf(__('IP %s removed from whitelist', 'brute-force-login-protection'), $IP));
                 } else {
-                    $this->__showError(sprintf(__('An error occurred while removing IP %s from whitelist', 'brute-force-login-protection'), $IP));
+                    $this->showError(sprintf(__('An error occurred while removing IP %s from whitelist', 'brute-force-login-protection'), $IP));
                 }
             }
-        } elseif (isset($_POST['reset'])) { //Reset settings
-            $this->__htaccess->remove403Message();
-            $this->__deleteOptions();
-            $this->__setDefaultOptions();
-            $this->__setHtaccessPath();
-            $this->__showMessage(sprintf(__('The Options have been successfully reset', 'brute-force-login-protection'), $IP));
+        } elseif (isset($_POST['reset'])) { // Reset settings
+            $this->htaccess->remove403Message();
+            $this->deleteOptions();
+            $this->setDefaultOptions();
+            $this->setHtaccessPath();
+            $this->showMessage(sprintf(__('The Options have been successfully reset', 'brute-force-login-protection'), $IP));
         }
 
-        $this->__fillOptions();
+        $this->fillOptions();
         include 'includes/settings-page.php';
     }
 
     /**
      * Called when a user login has failed
-     * Increase number of attempts for clients IP. Deny IP if max attempts is reached.
+     * Increase number of attempts for clients IP.
+     * Deny IP if max attempts is reached.
      * 
      * @return void
      */
-    public function loginFailed() {
-        $IP = $this->__getClientIP();
-        $whitelist = $this->__getWhitelist();
+    public function loginFailed()
+    {
+        $IP = $this->getClientIP();
+        $whitelist = $this->getWhitelist();
 
         if (!in_array($IP, $whitelist)) {
-            $this->__fillOptions();
+            $this->fillOptions();
 
-            sleep($this->__options['login_failed_delay']);
+            sleep($this->options['login_failed_delay']);
 
             $attempts = get_option('bflp_login_attempts');
             if (!is_array($attempts)) {
@@ -206,9 +234,9 @@ class BruteForceLoginProtection {
             }
 
             $denyIP = false;
-            if ($IP && isset($attempts[$IP]) && $attempts[$IP]['time'] > (time() - ($this->__options['reset_time'] * 60))) {
+            if ($IP && isset($attempts[$IP]) && $attempts[$IP]['time'] > (time() - ($this->options['reset_time'] * 60))) {
                 $attempts[$IP]['attempts'] ++;
-                if ($attempts[$IP]['attempts'] >= $this->__options['allowed_attempts']) {
+                if ($attempts[$IP]['attempts'] >= $this->options['allowed_attempts']) {
                     $denyIP = true;
                     unset($attempts[$IP]);
                 } else {
@@ -222,18 +250,18 @@ class BruteForceLoginProtection {
             update_option('bflp_login_attempts', $attempts);
 
             if ($denyIP) {
-                if ($this->__options['send_email']) {
-                    $this->__sendEmail($IP);
+                if ($this->options['send_email']) {
+                    $this->sendEmail($IP);
                 }
-                $this->__setHtaccessPath();
-                $this->__htaccess->denyIP($IP);
+                $this->setHtaccessPath();
+                $this->htaccess->denyIP($IP);
                 header('HTTP/1.0 403 Forbidden');
-                die($this->__options['403_message']);
+                die($this->options['403_message']);
             }
 
-            if ($this->__options['inform_user']) {
+            if ($this->options['inform_user']) {
                 global $error;
-                $remainingAttempts = $this->__options['allowed_attempts'] - $attempts[$IP]['attempts'];
+                $remainingAttempts = $this->options['allowed_attempts'] - $attempts[$IP]['attempts'];
                 $error .= '<br />';
                 $error .= sprintf(_n("%d attempt remaining.", "%d attempts remaining.", $remainingAttempts, 'brute-force-login-protection'), $remainingAttempts);
             }
@@ -242,14 +270,15 @@ class BruteForceLoginProtection {
 
     /**
      * Called when a user has successfully logged in
-     * Removes IP from bflp_login_attempts if exist.
+     * Remove IP from bflp_login_attempts if exist.
      * 
      * @return void
      */
-    public function loginSucceeded() {
+    public function loginSucceeded()
+    {
         $attempts = get_option('bflp_login_attempts');
         if (is_array($attempts)) {
-            $IP = $this->__getClientIP();
+            $IP = $this->getClientIP();
             if (isset($attempts[$IP])) {
                 unset($attempts[$IP]);
                 update_option('bflp_login_attempts', $attempts);
@@ -258,112 +287,127 @@ class BruteForceLoginProtection {
     }
 
     /**
-     * Settings validation functions
-     */
-
-    /**
-     * Validates bflp_allowed_attempts field.
+     * Validate bflp_allowed_attempts field.
      * 
      * @param mixed $input
      * @return int
      */
-    public function validateAllowedAttempts($input) {
+    public function validateAllowedAttempts($input)
+    {
         if (is_numeric($input) && ($input >= 1 && $input <= 100)) {
             return $input;
         } else {
-            add_settings_error('bflp_allowed_attempts', 'bflp_allowed_attempts', __('Allowed login attempts must be a number (between 1 and 100)', 'brute-force-login-protection'));
-            $this->__fillOption('allowed_attempts');
-            return $this->__options['allowed_attempts'];
+            add_settings_error(
+                    'bflp_allowed_attempts', // Setting slug
+                    'bflp_allowed_attempts', // Error slug
+                    __('Allowed login attempts must be a number (between 1 and 100)', 'brute-force-login-protection') // Message
+            );
+            $this->fillOption('allowed_attempts');
+            return $this->options['allowed_attempts'];
         }
     }
 
     /**
-     * Validates bflp_reset_time field.
+     * Validate bflp_reset_time field.
      * 
      * @param mixed $input
      * @return int
      */
-    public function validateResetTime($input) {
+    public function validateResetTime($input)
+    {
         if (is_numeric($input) && $input >= 1) {
             return $input;
         } else {
-            add_settings_error('bflp_reset_time', 'bflp_reset_time', __('Minutes before resetting must be a number (higher than 1)', 'brute-force-login-protection'));
-            $this->__fillOption('reset_time');
-            return $this->__options['reset_time'];
+            add_settings_error(
+                    'bflp_reset_time', // Setting slug
+                    'bflp_reset_time', // Error slug
+                    __('Minutes before resetting must be a number (higher than 1)', 'brute-force-login-protection') // Message
+            );
+            $this->fillOption('reset_time');
+            return $this->options['reset_time'];
         }
     }
 
     /**
-     * Validates bflp_login_failed_delay field.
+     * Validate bflp_login_failed_delay field.
      * 
      * @param mixed $input
      * @return int
      */
-    public function validateLoginFailedDelay($input) {
+    public function validateLoginFailedDelay($input)
+    {
         if (is_numeric($input) && ($input >= 1 && $input <= 10)) {
             return $input;
         } else {
-            add_settings_error('bflp_login_failed_delay', 'bflp_login_failed_delay', __('Failed login delay must be a number (between 1 and 10)', 'brute-force-login-protection'));
-            $this->__fillOption('login_failed_delay');
-            return $this->__options['login_failed_delay'];
+            add_settings_error(
+                    'bflp_login_failed_delay', // Setting slug
+                    'bflp_login_failed_delay', // Error slug
+                    __('Failed login delay must be a number (between 1 and 10)', 'brute-force-login-protection') // Message
+            );
+            $this->fillOption('login_failed_delay');
+            return $this->options['login_failed_delay'];
         }
     }
 
     /**
-     * Saves bflp_403_message field to .htaccess.
+     * Save bflp_403_message field to .htaccess.
      * 
      * @param mixed $input
      * @return string
      */
-    public function validate403Message($input) {
+    public function validate403Message($input)
+    {
         $message = htmlentities($input);
 
-        if ($this->__htaccess->edit403Message($message)) {
+        if ($this->htaccess->edit403Message($message)) {
             return $message;
         } else {
-            add_settings_error('bflp_403_message', 'bflp_403_message', __('An error occurred while saving the blocked users message', 'brute-force-login-protection'));
-            $this->__fillOption('403_message');
-            return $this->__options['403_message'];
+            add_settings_error(
+                    'bflp_403_message', // Setting slug
+                    'bflp_403_message', // Error slug
+                    __('An error occurred while saving the blocked users message', 'brute-force-login-protection') // Message
+            );
+            $this->fillOption('403_message');
+            return $this->options['403_message'];
         }
     }
 
     /**
-     * Private functions
-     */
-
-    /**
-     * Sets htaccess path to $__options['htaccess_dir'].
+     * Set htaccess path to $options['htaccess_dir'].
      * 
      * @return void
      */
-    private function __setHtaccessPath() {
-        $this->__fillOption('htaccess_dir');
-        $this->__htaccess->setPath($this->__options['htaccess_dir']);
+    private function setHtaccessPath()
+    {
+        $this->fillOption('htaccess_dir');
+        $this->htaccess->setPath($this->options['htaccess_dir']);
     }
 
     /**
-     * Sets default options into $__options
+     * Set default options
      * 
      * @return void
      */
-    private function __setDefaultOptions() {
-        $this->__options = array(
-            'allowed_attempts'   => 20, //Allowed login attempts before deny,
-            'reset_time'         => 60, //Minutes before resetting login attempts count
-            'login_failed_delay' => 1, //Delay in seconds when a user login has failed
-            'inform_user'        => true, //Inform user about remaining login attempts on login page
-            'send_email'         => false, //Send email to administrator when an IP has been blocked
-            '403_message'        => '', //Message to show to a blocked user
-            'htaccess_dir'       => get_home_path() //.htaccess file location
+    private function setDefaultOptions()
+    {
+        $this->options = array(
+            'allowed_attempts' => 20, // Allowed login attempts before deny,
+            'reset_time' => 60, // Minutes before resetting login attempts count
+            'login_failed_delay' => 1, // Delay in seconds when a user login has failed
+            'inform_user' => true, // Inform user about remaining login attempts on login page
+            'send_email' => false, // Send email to administrator when an IP has been blocked
+            '403_message' => '', // Message to show to a blocked user
+            'htaccess_dir' => get_home_path() // .htaccess file location
         );
     }
 
     /**
-     * Registers options (settings).
+     * Register options (settings).
      * 
      * @return void
      */
-    private function __registerOptions() {
+    private function registerOptions()
+    {
         register_setting('brute-force-login-protection', 'bflp_allowed_attempts', array($this, 'validateAllowedAttempts'));
         register_setting('brute-force-login-protection', 'bflp_reset_time', array($this, 'validateResetTime'));
         register_setting('brute-force-login-protection', 'bflp_login_failed_delay', array($this, 'validateLoginFailedDelay'));
@@ -374,11 +418,38 @@ class BruteForceLoginProtection {
     }
 
     /**
-     * Deletes options from database.
+     * Fill single option with value (from database).
+     * 
+     * @param string $name
+     * @return void
+     */
+    private function fillOption($name)
+    {
+        $this->options[$name] = get_option('bflp_' . $name, $this->options[$name]);
+    }
+
+    /**
+     * Fill all options with value (from database).
      * 
      * @return void
      */
-    private function __deleteOptions() {
+    private function fillOptions()
+    {
+        $this->fillOption('allowed_attempts');
+        $this->fillOption('reset_time');
+        $this->fillOption('login_failed_delay');
+        $this->fillOption('inform_user');
+        $this->fillOption('send_email');
+        $this->fillOption('403_message');
+    }
+
+    /**
+     * Delete options from database.
+     * 
+     * @return void
+     */
+    private function deleteOptions()
+    {
         delete_option('bflp_allowed_attempts');
         delete_option('bflp_reset_time');
         delete_option('bflp_login_failed_delay');
@@ -389,35 +460,12 @@ class BruteForceLoginProtection {
     }
 
     /**
-     * Fills options with value (from database).
-     * 
-     * @return void
-     */
-    private function __fillOptions() {
-        $this->__options['allowed_attempts'] = get_option('bflp_allowed_attempts', $this->__options['allowed_attempts']);
-        $this->__options['reset_time'] = get_option('bflp_reset_time', $this->__options['reset_time']);
-        $this->__options['login_failed_delay'] = get_option('bflp_login_failed_delay', $this->__options['login_failed_delay']);
-        $this->__options['inform_user'] = get_option('bflp_inform_user', $this->__options['inform_user']);
-        $this->__options['send_email'] = get_option('bflp_send_email', $this->__options['send_email']);
-        $this->__options['403_message'] = get_option('bflp_403_message', $this->__options['403_message']);
-    }
-
-    /**
-     * Fills single option with value (from database).
-     * 
-     * @param string $name
-     * @return void
-     */
-    private function __fillOption($name) {
-        $this->__options[$name] = get_option('bflp_' . $name, $this->__options[$name]);
-    }
-
-    /**
-     * Returs array of whitelisted IP addresses.
+     * Return array of whitelisted IP addresses.
      * 
      * @return array
      */
-    private function __getWhitelist() {
+    private function getWhitelist()
+    {
         $whitelist = get_option('bflp_whitelist');
 
         if (!is_array($whitelist)) {
@@ -428,17 +476,18 @@ class BruteForceLoginProtection {
     }
 
     /**
-     * Adds IP to whitelist.
+     * Add IP to whitelist.
      * 
      * @param string $IP
      * @return boolean
      */
-    private function __whitelistIP($IP) {
+    private function whitelistIP($IP)
+    {
         if (!filter_var($IP, FILTER_VALIDATE_IP)) {
             return false;
         }
 
-        $this->__htaccess->undenyIP($IP);
+        $this->htaccess->undenyIP($IP);
 
         $whitelist = get_option('bflp_whitelist');
         if (!is_array($whitelist)) {
@@ -452,12 +501,13 @@ class BruteForceLoginProtection {
     }
 
     /**
-     * Removes IP from whitelist.
+     * Remove IP from whitelist.
      * 
      * @param string $IP
      * @return boolean
      */
-    private function __unwhitelistIP($IP) {
+    private function unwhitelistIP($IP)
+    {
         if (!filter_var($IP, FILTER_VALIDATE_IP)) {
             return false;
         }
@@ -479,20 +529,22 @@ class BruteForceLoginProtection {
     }
 
     /**
-     * Returns the client ip address.
+     * Return the client ip address.
      * 
      * @return mixed
      */
-    private function __getClientIP() {
+    private function getClientIP()
+    {
         return $_SERVER['REMOTE_ADDR'];
     }
 
     /**
-     * Sends email to admin with info about blocked IP
+     * Send email to admin with info about blocked IP
      * 
      * @return mixed
      */
-    private function __sendEmail($IP) {
+    private function sendEmail($IP)
+    {
         $to = get_option('admin_email');
         $subject = sprintf(__('IP %s has been blocked', 'brute-force-login-protection'), $IP);
         $message = sprintf(__('Brute Force Login Protection has blocked IP %s from access to %s on %s', 'brute-force-login-protection'), $IP, get_site_url(), date('Y-m-d H:i:s'));
@@ -501,26 +553,27 @@ class BruteForceLoginProtection {
     }
 
     /**
-     * Echoes message with class 'updated'.
+     * Echo message
      * 
      * @param string $message
      * @return void
      */
-    private function __showMessage($message) {
-        echo '<div class="updated"><p>' . $message . '</p></div>';
+    private function showMessage($message, $class = 'updated')
+    {
+        echo '<div class="' . $class . '"><p>' . $message . '</p></div>';
     }
 
     /**
-     * Echoes message with class 'error'.
+     * Echo message with class 'error'.
      * 
      * @param string $message
      * @return void
      */
-    private function __showError($message) {
-        echo '<div class="error"><p>' . $message . '</p></div>';
+    private function showError($message)
+    {
+        $this->showMessage($message, 'error');
     }
-
 }
 
-//Instantiate BruteForceLoginProtection class
+// Instantiate BruteForceLoginProtection class
 new BruteForceLoginProtection();

@@ -36,7 +36,7 @@
 
     <div class="metabox-holder">
         <div class="postbox">
-            <?php $status = $this->__htaccess->checkRequirements(); ?>
+            <?php $status = $this->htaccess->checkRequirements(); ?>
             <h3>
                 <?php _e('Status', 'brute-force-login-protection'); ?>
                 <?php if (in_array(false, $status)): ?>
@@ -72,25 +72,25 @@
                 <?php settings_fields('brute-force-login-protection'); ?>
                 <div class="inside">
                     <p><strong><?php _e('Allowed login attempts before blocking IP', 'brute-force-login-protection'); ?></strong></p>
-                    <p><input type="number" min="1" max="100" name="bflp_allowed_attempts" value="<?php echo $this->__options['allowed_attempts']; ?>" /></p>
+                    <p><input type="number" min="1" max="100" name="bflp_allowed_attempts" value="<?php echo $this->options['allowed_attempts']; ?>" /></p>
 
                     <p><strong><?php _e('Minutes before resetting login attempts count', 'brute-force-login-protection'); ?></strong></p>
-                    <p><input type="number" min="1" name="bflp_reset_time" value="<?php echo $this->__options['reset_time']; ?>" /></p>
+                    <p><input type="number" min="1" name="bflp_reset_time" value="<?php echo $this->options['reset_time']; ?>" /></p>
 
                     <p><strong><?php _e('Delay in seconds when a login attempt has failed (to slow down brute force attack)', 'brute-force-login-protection'); ?></strong></p>
-                    <p><input type="number" min="1" max="10" name="bflp_login_failed_delay" value="<?php echo $this->__options['login_failed_delay']; ?>" /></p>
+                    <p><input type="number" min="1" max="10" name="bflp_login_failed_delay" value="<?php echo $this->options['login_failed_delay']; ?>" /></p>
 
                     <p><strong><?php _e('Inform user about remaining login attempts on login page', 'brute-force-login-protection'); ?></strong></p>
-                    <p><input type="checkbox" name="bflp_inform_user" value="true" <?php echo ($this->__options['inform_user']) ? 'checked' : ''; ?> /></p>
+                    <p><input type="checkbox" name="bflp_inform_user" value="true" <?php echo ($this->options['inform_user']) ? 'checked' : ''; ?> /></p>
 
                     <p><strong><?php _e('Send email to administrator when an IP has been blocked', 'brute-force-login-protection'); ?></strong></p>
-                    <p><input type="checkbox" name="bflp_send_email" value="true" <?php echo ($this->__options['send_email']) ? 'checked' : ''; ?> /></p>
+                    <p><input type="checkbox" name="bflp_send_email" value="true" <?php echo ($this->options['send_email']) ? 'checked' : ''; ?> /></p>
 
                     <p><strong><?php _e('Message to show to blocked users (leave empty for default message)', 'brute-force-login-protection'); ?></strong></p>
-                    <p><input type="text" size="70" name="bflp_403_message" value="<?php echo $this->__options['403_message']; ?>" /></p>
+                    <p><input type="text" size="70" name="bflp_403_message" value="<?php echo $this->options['403_message']; ?>" /></p>
 
                     <p><strong><?php _e('.htaccess file location', 'brute-force-login-protection'); ?></strong></p>
-                    <p><input type="text" size="70" name="bflp_htaccess_dir" value="<?php echo $this->__options['htaccess_dir']; ?>" /></p>
+                    <p><input type="text" size="70" name="bflp_htaccess_dir" value="<?php echo $this->options['htaccess_dir']; ?>" /></p>
                 </div>
                 <div class="postbox-footer">
                     <?php submit_button(__('Save', 'brute-force-login-protection'), 'primary', 'submit', false); ?>&nbsp;
@@ -112,7 +112,7 @@
         <tbody>
             <?php
             $i = 1;
-            foreach ($this->__htaccess->getDeniedIPs() as $deniedIP):
+            foreach ($this->htaccess->getDeniedIPs() as $deniedIP):
                 ?>
                 <tr <?php echo ($i % 2 == 0) ? 'class="even"' : ''; ?>>
                     <td><?php echo $i; ?></td>
@@ -153,10 +153,10 @@
         </thead>
         <tbody>
             <?php
-            $currentIP = $this->__getClientIP();
+            $currentIP = $this->getClientIP();
 
             $i = 1;
-            $whitelist = $this->__getWhitelist();
+            $whitelist = $this->getWhitelist();
             foreach ($whitelist as $whitelistedIP):
                 ?>
                 <tr <?php echo ($i % 2 == 0) ? 'class="even"' : ''; ?>>

@@ -1,44 +1,63 @@
 <?php
 
-class Htaccess {
+class Htaccess
+{
+    /**
+     * Path to .htaccess file
+     * 
+     * @var string
+     */
+    private $path;
 
-    private $__path;
-    private $__header = array(
+    /**
+     * Default .htaccess lines before custom lines
+     * 
+     * @var array
+     */
+    private $header = array(
         '<Files "*">',
         'order deny,allow'
     );
-    private $__footer = array(
+
+    /**
+     * Default .htaccess lines after custom lines
+     * 
+     * @var array
+     */
+    private $footer = array(
         '</Files>'
     );
 
     /**
-     * Initializes $__path.
+     * Initialize $path.
      * 
      * @param string $dir
      */
-    public function setPath($dir) {
-        $this->__path = $dir . '/.htaccess';
+    public function setPath($dir)
+    {
+        $this->path = $dir . '/.htaccess';
     }
 
     /**
-     * Checks if .htaccess file is found, readable and writeable.
+     * Check if .htaccess file is found, readable and writeable.
      * 
      * @return array
      */
-    public function checkRequirements() {
+    public function checkRequirements()
+    {
         $status = array(
-            'found'     => false,
-            'readable'  => false,
+            'found' => false,
+            'readable' => false,
             'writeable' => false
         );
 
-        if (file_exists($this->__path)) { //File found
+        if (file_exists($this->path)) { // File found
             $status['found'] = true;
         }
-        if (is_readable($this->__path)) { //File readable
+        if (is_readable($this->path)) { // File readable
             $status['readable'] = true;
         }
-        if (is_writeable($this->__path)) { //File writeable
+        if (is_writeable($this->path)) { // File writeable
             $status['writeable'] = true;
         }
 
@@ -46,12 +65,13 @@ class Htaccess {
     }
 
     /**
-     * Returs array of denied IP addresses from .htaccess.
+     * Return array of denied IP addresses from .htaccess.
      * 
      * @return array
      */
-    public function getDeniedIPs() {
-        $lines = $this->__getLines('deny from ');
+    public function getDeniedIPs()
+    {
+        $lines = $this->getLines('deny from ');
 
         foreach ($lines as $key => $line) {
             $lines[$key] = substr($line, 10);
@@ -61,111 +81,114 @@ class Htaccess {
     }
 
     /**
-     * Adds 'deny from $IP' to .htaccess.
+     * Add 'deny from $IP' to .htaccess.
      * 
      * @param string $IP
      * @return boolean
      */
-    public function denyIP($IP) {
+    public function denyIP($IP)
+    {
         if (!filter_var($IP, FILTER_VALIDATE_IP)) {
             return false;
         }
 
-        return $this->__addLine('deny from ' . $IP);
+        return $this->addLine('deny from ' . $IP);
     }
 
     /**
-     * Removes 'deny from $IP' from .htaccess.
+     * Remove 'deny from $IP' from .htaccess.
      * 
      * @param string $IP
      * @return boolean
      */
-    public function undenyIP($IP) {
+    public function undenyIP($IP)
+    {
         if (!filter_var($IP, FILTER_VALIDATE_IP)) {
             return false;
         }
 
-        return $this->__removeLine('deny from ' . $IP);
+        return $this->removeLine('deny from ' . $IP);
     }
 
     /**
-     * Edits ErrorDocument 403 line in .htaccess.
+     * Edit ErrorDocument 403 line in .htaccess.
      * 
      * @param string $message
      * @return boolean
      */
-    public function edit403Message($message) {
+    public function edit403Message($message)
+    {
         if (empty($message)) {
             return $this->remove403Message();
         }
 
         $line = 'ErrorDocument 403 "' . $message . '"';
 
-        $otherLines = $this->__getLines('ErrorDocument 403 ', true, true);
+        $otherLines = $this->getLines('ErrorDocument 403 ', true, true);
 
-        $insertion = array_merge($this->__header, array($line), $otherLines, $this->__footer);
+        $insertion = array_merge($this->header, array($line), $otherLines, $this->footer);
 
-        return $this->__insert($insertion);
+        return $this->insert($insertion);
     }
 
     /**
-     * Removes ErrorDocument 403 line from .htaccess.
+     * Remove ErrorDocument 403 line from .htaccess.
      * 
      * @return boolean
      */
-    public function remove403Message() {
-        return $this->__removeLine('', 'ErrorDocument 403 ');
+    public function remove403Message()
+    {
+        return $this->removeLine('', 'ErrorDocument 403 ');
     }
 
     /**
-     * Comments out all BFLP lines in .htaccess.
+     * Comment out all BFLP lines in .htaccess.
      * 
      * @return boolean
      */
-    public function commentLines() {
-        $currentLines = $this->__getLines(array('deny from ', 'ErrorDocument 403 '));
+    public function commentLines()
+    {
+        $currentLines = $this->getLines(array('deny from ', 'ErrorDocument 403 '));
 
         $insertion = array();
         foreach ($currentLines as $line) {
             $insertion[] = '#' . $line;
         }
 
-        return $this->__insert($insertion);
+        return $this->insert($insertion);
     }
 
     /**
-     * Uncomments all commented BFLP lines in .htaccess.
+     * Uncomment all commented BFLP lines in .htaccess.
      * 
      * @return boolean
      */
-    public function uncommentLines() {
-        $currentLines = $this->__getLines(array('#deny from ', '#ErrorDocument 403 '));
+    public function uncommentLines()
+    {
+        $currentLines = $this->getLines(array('#deny from ', '#ErrorDocument 403 '));
 
         $lines = array();
         foreach ($currentLines as $line) {
             $lines[] = substr($line, 1);
         }
 
-        $insertion = array_merge($this->__header, $lines, $this->__footer);
+        $insertion = array_merge($this->header, $lines, $this->footer);
 
-        return $this->__insert($insertion);
+        return $this->insert($insertion);
     }
 
     /**
-     * Private functions
-     */
-
-    /**
-     * Returs array of (prefixed) lines from .htaccess.
+     * Return array of (prefixed) lines from .htaccess.
      * 
      * @param string $prefixes
      * @return array
      */
-    private function __getLines($prefixes = false, $onlyBody = false, $exceptPrefix = false) {
-        $allLines = $this->__extract();
+    private function getLines($prefixes = false, $onlyBody = false, $exceptPrefix = false)
+    {
+        $allLines = $this->extract();
 
         if ($onlyBody) {
-            $allLines = array_diff($allLines, $this->__header, $this->__footer);
+            $allLines = array_diff($allLines, $this->header, $this->footer);
         }
 
         if (!$prefixes) {
@@ -193,26 +216,28 @@ class Htaccess {
     }
 
     /**
-     * Adds single line to .htaccess.
+     * Add single line to .htaccess.
      * 
      * @param string $line
      * @return boolean
      */
-    private function __addLine($line) {
-        $insertion = array_merge($this->__header, $this->__getLines(false, true), array($line), $this->__footer);
+    private function addLine($line)
+    {
+        $insertion = array_merge($this->header, $this->getLines(false, true), array($line), $this->footer);
 
-        return $this->__insert(array_unique($insertion));
+        return $this->insert(array_unique($insertion));
     }
 
     /**
-     * Removes single line from .htaccess.
+     * Remove single line from .htaccess.
      * 
      * @param string $line
      * @param string $prefix
      * @return boolean
      */
-    private function __removeLine($line, $prefix = false) {
-        $insertion = $this->__getLines();
+    private function removeLine($line, $prefix = false)
+    {
+        $insertion = $this->getLines();
 
         if ($prefix !== false) {
             $lineKey = false;
@@ -233,24 +258,25 @@ class Htaccess {
 
         unset($insertion[$lineKey]);
 
-        return $this->__insert($insertion);
+        return $this->insert($insertion);
     }
 
     /**
-     * Returns array of strings from between BEGIN and END markers from .htaccess.
+     * Return array of strings from between BEGIN and END markers from .htaccess.
      * 
      * @return array Array of strings from between BEGIN and END markers from .htaccess.
      */
-    private function __extract() {
+    private function extract()
+    {
         $marker = 'Brute Force Login Protection';
 
         $result = array();
 
-        if (!file_exists($this->__path)) {
+        if (!file_exists($this->path)) {
             return $result;
         }
 
-        if ($markerdata = explode("\n", implode('', file($this->__path)))) {
+        if ($markerdata = explode("\n", implode('', file($this->path)))) {
             $state = false;
             foreach ($markerdata as $markerline) {
                 if (strpos($markerline, '# END ' . $marker) !== false) {
@@ -269,21 +295,22 @@ class Htaccess {
     }
 
     /**
-     * Inserts an array of strings into .htaccess, placing it between
-     * BEGIN and END markers. Replaces existing marked info. Retains surrounding
-     * data. Creates file if none exists.
+     * Insert an array of strings into .htaccess, placing it between BEGIN and END markers.
+     * Replace existing marked info. Retain surrounding data.
+     * Create file if none exists.
      *
      * @param string $insertion
      * @return bool True on write success, false on failure.
      */
-    private function __insert($insertion) {
+    private function insert($insertion)
+    {
         $marker = 'Brute Force Login Protection';
 
-        if (!file_exists($this->__path) || is_writeable($this->__path)) {
-            if (!file_exists($this->__path)) {
+        if (!file_exists($this->path) || is_writeable($this->path)) {
+            if (!file_exists($this->path)) {
                 $markerdata = '';
             } else {
-                $markerdata = explode("\n", implode('', file($this->__path)));
+                $markerdata = explode("\n", implode('', file($this->path)));
             }
 
             $newContent = '';
@@ -298,7 +325,7 @@ class Htaccess {
                         $state = false;
                     }
 
-                    if ($state) { //Non-BFLP lines
+                    if ($state) { // Non-BFLP lines
                         if ($n + 1 < $lineCount) {
                             $newContent .= "{$markerline}\n";
                         } else {
@@ -320,7 +347,7 @@ class Htaccess {
                     }
                 }
 
-                if ($state === false) { //If BEGIN marker found but missing END marker
+                if ($state === false) { // If BEGIN marker found but missing END marker
                     return false;
                 }
             }
@@ -333,10 +360,9 @@ class Htaccess {
                 $newContent .= "# END {$marker}\n";
             }
 
-            return file_put_contents($this->__path, $newContent, LOCK_EX);
+            return file_put_contents($this->path, $newContent, LOCK_EX);
         } else {
             return false;
         }
     }
-
 }
