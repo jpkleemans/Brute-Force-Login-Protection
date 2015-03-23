@@ -491,7 +491,7 @@ class BruteForceLoginProtection
         $this->setHtaccessPath();
         $this->htaccess->denyIP($IP);
 
-        header('HTTP/1.0 403 Forbidden');
+        status_header(403);
         wp_die($this->options['403_message']);
     }
 
