@@ -2,6 +2,7 @@
 
 require_once ABSPATH . '/wp-admin/includes/file.php';
 require_once 'includes/Htaccess.php';
+require_once 'includes/Whitelist.php';
 
 /**
  * Plugin Name: Brute Force Login Protection
@@ -45,6 +46,13 @@ class BruteForceLoginProtection
     private $htaccess;
 
     /**
+     * Whitelist object
+     * 
+     * @var Whitelist
+     */
+    private $whitelist;
+
+    /**
      * Initialize $options and $htaccess.
      * Interact with WordPress hooks.
      * 
@@ -57,6 +65,7 @@ class BruteForceLoginProtection
 
         // Instantiate Htaccess class
         $this->htaccess = new Htaccess();
+        $this->whitelist = new Whitelist();
 
         // Activation and deactivation hooks
         register_activation_hook(__FILE__, array($this, 'activate'));
@@ -167,44 +176,92 @@ class BruteForceLoginProtection
      */
     public function showSettingsPage()
     {
-        if (filter_input(INPUT_POST, 'IP', FILTER_VALIDATE_IP)) {
-            $IP = filter_input(INPUT_POST, 'IP', FILTER_VALIDATE_IP);
-
-            if (filter_input(INPUT_POST, 'block', FILTER_SANITIZE_STRING)) { // Manually block IP
-                $whitelist = $this->getWhitelist();
-                if (in_array($IP, $whitelist)) {
-                    $this->showError(sprintf(__('You can\'t block a whitelisted IP', 'brute-force-login-protection'), $IP));
-                } elseif ($this->htaccess->denyIP($IP)) {
-                    $this->showMessage(sprintf(__('IP %s blocked', 'brute-force-login-protection'), $IP));
-                } else {
-                    $this->showError(sprintf(__('An error occurred while blocking IP %s', 'brute-force-login-protection'), $IP));
-                }
-            } elseif (filter_input(INPUT_POST, 'unblock', FILTER_SANITIZE_STRING)) { // Unblock IP
-                if ($this->htaccess->undenyIP($IP)) {
-                    $this->showMessage(sprintf(__('IP %s unblocked', 'brute-force-login-protection'), $IP));
-                } else {
-                    $this->showError(sprintf(__('An error occurred while unblocking IP %s', 'brute-force-login-protection'), $IP));
-                }
-            } elseif (filter_input(INPUT_POST, 'whitelist', FILTER_SANITIZE_STRING)) { // Add IP to whitelist
-                if ($this->whitelistIP($IP)) {
-                    $this->showMessage(sprintf(__('IP %s added to whitelist', 'brute-force-login-protection'), $IP));
-                } else {
-                    $this->showError(sprintf(__('An error occurred while adding IP %s to whitelist', 'brute-force-login-protection'), $IP));
-                }
-            } elseif (filter_input(INPUT_POST, 'unwhitelist', FILTER_SANITIZE_STRING)) { // Remove IP from whitelist
-                if ($this->unwhitelistIP($IP)) {
-                    $this->showMessage(sprintf(__('IP %s removed from whitelist', 'brute-force-login-protection'), $IP));
-                } else {
-                    $this->showError(sprintf(__('An error occurred while removing IP %s from whitelist', 'brute-force-login-protection'), $IP));
-                }
-            }
-        } elseif (filter_input(INPUT_POST, 'reset', FILTER_SANITIZE_STRING)) { // Reset options
-            $this->resetOptions();
-        }
+        $this->handlePostRequests();
 
         // Load options and show page
         $this->fillOptions();
         include 'includes/settings-page.php';
+    }
+
+    /**
+     * Handle settings page POST requests
+     */
+    private function handlePostRequests()
+    {
+        if (filter_input(INPUT_POST, 'IP', FILTER_VALIDATE_IP)) {
+            $IP = filter_input(INPUT_POST, 'IP', FILTER_VALIDATE_IP);
+
+            if (filter_input(INPUT_POST, 'block', FILTER_SANITIZE_STRING)) { // Manually block IP
+                $this->manualBlockIP($IP);
+            } elseif (filter_input(INPUT_POST, 'unblock', FILTER_SANITIZE_STRING)) { // Unblock IP
+                $this->manualUnblockIP($IP);
+            } elseif (filter_input(INPUT_POST, 'whitelist', FILTER_SANITIZE_STRING)) { // Add IP to whitelist
+                $this->manualWhitelistIP($IP);
+            } elseif (filter_input(INPUT_POST, 'unwhitelist', FILTER_SANITIZE_STRING)) { // Remove IP from whitelist
+                $this->manualUnwhitelistIP($IP);
+            }
+        } elseif (filter_input(INPUT_POST, 'reset', FILTER_SANITIZE_STRING)) { // Reset options
+            $this->resetOptions();
+        }
+    }
+
+    /**
+     * Block IP and show status message
+     * 
+     * @param string $IP
+     */
+    private function manualBlockIP($IP)
+    {
+        $whitelist = $this->whitelist->getAll();
+        if (in_array($IP, $whitelist)) {
+            $this->showError(sprintf(__('You can\'t block a whitelisted IP', 'brute-force-login-protection'), $IP));
+        } elseif ($this->htaccess->denyIP($IP)) {
+            $this->showMessage(sprintf(__('IP %s blocked', 'brute-force-login-protection'), $IP));
+        } else {
+            $this->showError(sprintf(__('An error occurred while blocking IP %s', 'brute-force-login-protection'), $IP));
+        }
+    }
+
+    /**
+     * Unblock IP and show status message
+     * 
+     * @param string $IP
+     */
+    private function manualUnblockIP($IP)
+    {
+        if ($this->htaccess->undenyIP($IP)) {
+            $this->showMessage(sprintf(__('IP %s unblocked', 'brute-force-login-protection'), $IP));
+        } else {
+            $this->showError(sprintf(__('An error occurred while unblocking IP %s', 'brute-force-login-protection'), $IP));
+        }
+    }
+
+    /**
+     * Add IP to whitelist and show status message
+     * 
+     * @param string $IP
+     */
+    private function manualWhitelistIP($IP)
+    {
+        if ($this->whitelist->add($IP) && $this->htaccess->undenyIP($IP)) {
+            $this->showMessage(sprintf(__('IP %s added to whitelist', 'brute-force-login-protection'), $IP));
+        } else {
+            $this->showError(sprintf(__('An error occurred while adding IP %s to whitelist', 'brute-force-login-protection'), $IP));
+        }
+    }
+
+    /**
+     * Remove IP from whitelist and show status message
+     * 
+     * @param string $IP
+     */
+    private function manualUnwhitelistIP($IP)
+    {
+        if ($this->whitelist->remove($IP)) {
+            $this->showMessage(sprintf(__('IP %s removed from whitelist', 'brute-force-login-protection'), $IP));
+        } else {
+            $this->showError(sprintf(__('An error occurred while removing IP %s from whitelist', 'brute-force-login-protection'), $IP));
+        }
     }
 
     /**
@@ -493,68 +550,6 @@ class BruteForceLoginProtection
 
         status_header(403);
         wp_die($this->options['403_message']);
-    }
-
-    /**
-     * Return array of whitelisted IP addresses.
-     * 
-     * @return array
-     */
-    private function getWhitelist()
-    {
-        $whitelist = get_option('bflp_whitelist');
-
-        if (!is_array($whitelist)) return array();
-
-        return $whitelist;
-    }
-
-    /**
-     * Add IP to whitelist.
-     * 
-     * @param string $IP
-     * @return boolean
-     */
-    private function whitelistIP($IP)
-    {
-        if (!filter_var($IP, FILTER_VALIDATE_IP)) return false;
-
-        $this->htaccess->undenyIP($IP);
-
-        $whitelist = get_option('bflp_whitelist');
-
-        // Create option in database if it doesn't exist
-        if (!is_array($whitelist)) {
-            $whitelist = array($IP);
-            return add_option('bflp_whitelist', $whitelist, '', 'no');
-        }
-
-        $whitelist[] = $IP;
-
-        return update_option('bflp_whitelist', array_unique($whitelist));
-    }
-
-    /**
-     * Remove IP from whitelist.
-     * 
-     * @param string $IP
-     * @return boolean
-     */
-    private function unwhitelistIP($IP)
-    {
-        if (!filter_var($IP, FILTER_VALIDATE_IP)) return false;
-
-        $whitelist = get_option('bflp_whitelist');
-
-        if (!is_array($whitelist)) return false;
-
-        $IPKey = array_search($IP, $whitelist);
-
-        if ($IPKey === false) return false;
-
-        unset($whitelist[$IPKey]);
-
-        return update_option('bflp_whitelist', $whitelist);
     }
 
     /**

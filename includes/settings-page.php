@@ -156,7 +156,7 @@
             $currentIP = $this->getClientIP();
 
             $i = 1;
-            $whitelist = $this->getWhitelist();
+            $whitelist = $this->whitelist->getAll();
             foreach ($whitelist as $whitelistedIP):
                 ?>
                 <tr <?php echo ($i % 2 == 0) ? 'class="even"' : ''; ?>>
