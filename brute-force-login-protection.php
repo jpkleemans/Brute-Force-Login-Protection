@@ -167,10 +167,10 @@ class BruteForceLoginProtection
      */
     public function showSettingsPage()
     {
-        if (isset($_POST['IP'])) {
-            $IP = $_POST['IP'];
+        if (filter_input(INPUT_POST, 'IP', FILTER_VALIDATE_IP)) {
+            $IP = filter_input(INPUT_POST, 'IP', FILTER_VALIDATE_IP);
 
-            if (isset($_POST['block'])) { // Manually block IP
+            if (filter_input(INPUT_POST, 'block', FILTER_SANITIZE_STRING)) { // Manually block IP
                 $whitelist = $this->getWhitelist();
                 if (in_array($IP, $whitelist)) {
                     $this->showError(sprintf(__('You can\'t block a whitelisted IP', 'brute-force-login-protection'), $IP));
@@ -179,26 +179,26 @@ class BruteForceLoginProtection
                 } else {
                     $this->showError(sprintf(__('An error occurred while blocking IP %s', 'brute-force-login-protection'), $IP));
                 }
-            } elseif (isset($_POST['unblock'])) { // Unblock IP
+            } elseif (filter_input(INPUT_POST, 'unblock', FILTER_SANITIZE_STRING)) { // Unblock IP
                 if ($this->htaccess->undenyIP($IP)) {
                     $this->showMessage(sprintf(__('IP %s unblocked', 'brute-force-login-protection'), $IP));
                 } else {
                     $this->showError(sprintf(__('An error occurred while unblocking IP %s', 'brute-force-login-protection'), $IP));
                 }
-            } elseif (isset($_POST['whitelist'])) { // Add IP to whitelist
+            } elseif (filter_input(INPUT_POST, 'whitelist', FILTER_SANITIZE_STRING)) { // Add IP to whitelist
                 if ($this->whitelistIP($IP)) {
                     $this->showMessage(sprintf(__('IP %s added to whitelist', 'brute-force-login-protection'), $IP));
                 } else {
                     $this->showError(sprintf(__('An error occurred while adding IP %s to whitelist', 'brute-force-login-protection'), $IP));
                 }
-            } elseif (isset($_POST['unwhitelist'])) { // Remove IP from whitelist
+            } elseif (filter_input(INPUT_POST, 'unwhitelist', FILTER_SANITIZE_STRING)) { // Remove IP from whitelist
                 if ($this->unwhitelistIP($IP)) {
                     $this->showMessage(sprintf(__('IP %s removed from whitelist', 'brute-force-login-protection'), $IP));
                 } else {
                     $this->showError(sprintf(__('An error occurred while removing IP %s from whitelist', 'brute-force-login-protection'), $IP));
                 }
             }
-        } elseif (isset($_POST['reset'])) { // Reset options
+        } elseif (filter_input(INPUT_POST, 'reset', FILTER_SANITIZE_STRING)) { // Reset options
             $this->resetOptions();
         }
 
