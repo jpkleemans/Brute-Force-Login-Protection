@@ -274,7 +274,7 @@ class BruteForceLoginProtection
     public function loginFailed()
     {
         $IP = $this->getClientIP();
-        $whitelist = $this->getWhitelist();
+        $whitelist = $this->whitelist->getAll();
 
         if (!in_array($IP, $whitelist)) {
             $this->fillOptions();
