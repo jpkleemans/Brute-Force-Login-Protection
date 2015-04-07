@@ -15,7 +15,7 @@ class Htaccess
      * @var array
      */
     private $header = array(
-        '<Files "*">',
+        '<FilesMatch ".*">',
         'order deny,allow'
     );
 
@@ -25,7 +25,7 @@ class Htaccess
      * @var array
      */
     private $footer = array(
-        '</Files>'
+        '</FilesMatch>'
     );
 
     /**
