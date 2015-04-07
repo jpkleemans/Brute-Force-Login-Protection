@@ -34,7 +34,7 @@ class BruteForceLoginProtection
     /**
      * Options array
      * 
-     * @var array 
+     * @var array
      */
     private $options;
 
@@ -188,19 +188,19 @@ class BruteForceLoginProtection
      */
     private function handlePostRequests()
     {
-        if (filter_input(INPUT_POST, 'IP', FILTER_VALIDATE_IP)) {
-            $IP = filter_input(INPUT_POST, 'IP', FILTER_VALIDATE_IP);
+        if (isset($_POST['IP'])) {
+            $IP = $_POST['IP'];
 
-            if (filter_input(INPUT_POST, 'block', FILTER_SANITIZE_STRING)) { // Manually block IP
+            if (isset($_POST['block'])) { // Manually block IP
                 $this->manualBlockIP($IP);
-            } elseif (filter_input(INPUT_POST, 'unblock', FILTER_SANITIZE_STRING)) { // Unblock IP
+            } elseif (isset($_POST['unblock'])) { // Unblock IP
                 $this->manualUnblockIP($IP);
-            } elseif (filter_input(INPUT_POST, 'whitelist', FILTER_SANITIZE_STRING)) { // Add IP to whitelist
+            } elseif (isset($_POST['whitelist'])) { // Add IP to whitelist
                 $this->manualWhitelistIP($IP);
-            } elseif (filter_input(INPUT_POST, 'unwhitelist', FILTER_SANITIZE_STRING)) { // Remove IP from whitelist
+            } elseif (isset($_POST['unwhitelist'])) { // Remove IP from whitelist
                 $this->manualUnwhitelistIP($IP);
             }
-        } elseif (filter_input(INPUT_POST, 'reset', FILTER_SANITIZE_STRING)) { // Reset options
+        } elseif (isset($_POST['reset'])) { // Reset options
             $this->resetOptions();
         }
     }
