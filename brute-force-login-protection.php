@@ -109,6 +109,9 @@ class BruteForceLoginProtection
         // Set htaccess path
         $this->setHtaccessPath();
 
+        // Set protected files
+        $this->setProtectedFiles();
+
         // Call checkRequirements to check for .htaccess errors
         add_action('admin_notices', array($this, 'showRequirementsErrors'));
     }
@@ -434,6 +437,31 @@ class BruteForceLoginProtection
     }
 
     /**
+     * Save bflp_protected_files field to .htaccess.
+     * 
+     * @param mixed $input
+     * @return string
+     */
+    public function validateProtectedFiles($input)
+    {
+        $trimmed = trim($input, ',');
+        $files = explode(',', $trimmed);
+
+        if ($this->htaccess->setFilesMatch($files, true)) {
+            return $trimmed;
+        }
+
+        add_settings_error(
+                'bflp_protected_files', // Setting slug
+                'bflp_protected_files', // Error slug
+                __('An error occurred while saving the list of protected files', 'brute-force-login-protection') // Message
+        );
+
+        $this->fillOption('bflp_protected_files');
+        return $this->options['bflp_protected_files'];
+    }
+
+    /**
      * Set htaccess path to $options['htaccess_dir'].
      * 
      * @return void
@@ -442,6 +470,18 @@ class BruteForceLoginProtection
     {
         $this->fillOption('htaccess_dir');
         $this->htaccess->setPath($this->options['htaccess_dir']);
+    }
+
+    /**
+     * Set htaccess protected files to $options['protected_files'].
+     * 
+     * @return void
+     */
+    private function setProtectedFiles()
+    {
+        $this->fillOption('protected_files');
+        $files = explode(',', $this->options['protected_files']);
+        $this->htaccess->setFilesMatch($files);
     }
 
     /**
@@ -458,6 +498,7 @@ class BruteForceLoginProtection
             'inform_user' => true, // Inform user about remaining login attempts on login page
             'send_email' => false, // Send email to administrator when an IP has been blocked
             '403_message' => '', // Message to show to a blocked user
+            'protected_files' => '', // Comma separated list of protected files
             'htaccess_dir' => get_home_path() // .htaccess file location
         );
     }
@@ -475,6 +516,7 @@ class BruteForceLoginProtection
         register_setting('brute-force-login-protection', 'bflp_inform_user');
         register_setting('brute-force-login-protection', 'bflp_send_email');
         register_setting('brute-force-login-protection', 'bflp_403_message', array($this, 'validate403Message'));
+        register_setting('brute-force-login-protection', 'bflp_protected_files', array($this, 'validateProtectedFiles'));
         register_setting('brute-force-login-protection', 'bflp_htaccess_dir');
     }
 
@@ -502,6 +544,7 @@ class BruteForceLoginProtection
         $this->fillOption('inform_user');
         $this->fillOption('send_email');
         $this->fillOption('403_message');
+        $this->fillOption('protected_files');
     }
 
     /**
@@ -531,6 +574,7 @@ class BruteForceLoginProtection
         delete_option('bflp_inform_user');
         delete_option('bflp_send_email');
         delete_option('bflp_403_message');
+        delete_option('bflp_protected_files');
         delete_option('bflp_htaccess_dir');
     }
 

@@ -10,23 +10,36 @@ class Htaccess
     private $path;
 
     /**
-     * Default .htaccess lines before custom lines
+     * Protected files regex
      * 
-     * @var array
+     * @var string
      */
-    private $header = array(
-        '<FilesMatch ".*">',
-        'order deny,allow'
-    );
+    private $filesMatch;
 
     /**
-     * Default .htaccess lines after custom lines
+     * Get .htaccess lines before custom lines
      * 
      * @var array
      */
-    private $footer = array(
-        '</FilesMatch>'
-    );
+    private function getHeader()
+    {
+        return array(
+            '<FilesMatch "' . $this->filesMatch . '">',
+            'order deny,allow'
+        );
+    }
+
+    /**
+     * Get .htaccess lines after custom lines
+     * 
+     * @var array
+     */
+    private function getFooter()
+    {
+        return array(
+            '</FilesMatch>'
+        );
+    }
 
     /**
      * Initialize $path.
@@ -36,6 +49,37 @@ class Htaccess
     public function setPath($dir)
     {
         $this->path = $dir . '/.htaccess';
+    }
+
+    /**
+     * Set FilesMatch and optionally update it in .htaccess.
+     * 
+     * @param string $files
+     * @param boolean $updateHtaccess
+     * @return boolean
+     */
+    public function setFilesMatch($files, $updateHtaccess = false)
+    {
+        if ($updateHtaccess) {
+            $lines = $this->getLines(false, true);
+        }
+
+        if (empty($files)) {
+            $this->filesMatch = '.*';
+        } else {
+            $regex = '';
+            foreach ($files as $file) {
+                $regex .= preg_quote(trim($file)) . '|';
+            }
+            $this->filesMatch = rtrim($regex, '|');
+        }
+
+        if ($updateHtaccess) {
+            $insertion = array_merge($this->getHeader(), $lines, $this->getFooter());
+            return $this->insert($insertion);
+        }
+
+        return true;
     }
 
     /**
@@ -120,7 +164,7 @@ class Htaccess
 
         $otherLines = $this->getLines('ErrorDocument 403 ', true, true);
 
-        $insertion = array_merge($this->header, array($line), $otherLines, $this->footer);
+        $insertion = array_merge($this->getHeader(), array($line), $otherLines, $this->getFooter());
 
         return $this->insert($insertion);
     }
@@ -166,7 +210,7 @@ class Htaccess
             $lines[] = substr($line, 1);
         }
 
-        $insertion = array_merge($this->header, $lines, $this->footer);
+        $insertion = array_merge($this->getHeader(), $lines, $this->getFooter());
 
         return $this->insert($insertion);
     }
@@ -182,7 +226,7 @@ class Htaccess
         $allLines = $this->extract();
 
         if ($onlyBody) {
-            $allLines = array_diff($allLines, $this->header, $this->footer);
+            $allLines = array_diff($allLines, $this->getHeader(), $this->getFooter());
         }
 
         if (!$prefixes) return $allLines;
@@ -215,7 +259,7 @@ class Htaccess
      */
     private function addLine($line)
     {
-        $insertion = array_merge($this->header, $this->getLines(false, true), array($line), $this->footer);
+        $insertion = array_merge($this->getHeader(), $this->getLines(false, true), array($line), $this->getFooter());
 
         return $this->insert(array_unique($insertion));
     }
