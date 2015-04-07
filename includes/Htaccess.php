@@ -67,6 +67,8 @@ class Htaccess
         if (empty($files)) {
             $this->filesMatch = '.*';
         } else {
+            $files = explode(',', $files);
+
             $regex = '';
             foreach ($files as $file) {
                 $regex .= preg_quote(trim($file)) . '|';

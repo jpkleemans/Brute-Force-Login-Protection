@@ -445,9 +445,8 @@ class BruteForceLoginProtection
     public function validateProtectedFiles($input)
     {
         $trimmed = trim($input, ',');
-        $files = explode(',', $trimmed);
 
-        if ($this->htaccess->setFilesMatch($files, true)) {
+        if ($this->htaccess->setFilesMatch($trimmed, true)) {
             return $trimmed;
         }
 
@@ -480,8 +479,7 @@ class BruteForceLoginProtection
     private function setProtectedFiles()
     {
         $this->fillOption('protected_files');
-        $files = explode(',', $this->options['protected_files']);
-        $this->htaccess->setFilesMatch($files);
+        $this->htaccess->setFilesMatch($this->options['protected_files']);
     }
 
     /**
