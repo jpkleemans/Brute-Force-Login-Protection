@@ -4,11 +4,11 @@ class Htaccess {
 
     private $__path;
     private $__header = array(
-        '<Files "*">',
+        '<FilesMatch ".*\.(php|html?|css|js|jpe?g|png|gif)$">',
         'order deny,allow'
     );
     private $__footer = array(
-        '</Files>'
+        '</FilesMatch>'
     );
 
     /**
