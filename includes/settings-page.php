@@ -89,7 +89,7 @@
                     <p><strong><?php _e('Message to show to blocked users (leave empty for default message)', 'brute-force-login-protection'); ?></strong></p>
                     <p><input type="text" size="70" name="bflp_403_message" value="<?php echo $this->options['403_message']; ?>" /></p>
 
-                    <p><strong><?php _e('Comma separated list of protected files (leave empty for all files)', 'brute-force-login-protection'); ?></strong></p>
+                    <p><strong><?php _e('Comma separated list of protected files (leave empty to protect all files)', 'brute-force-login-protection'); ?></strong></p>
                     <p><input type="text" size="70" name="bflp_protected_files" value="<?php echo $this->options['protected_files']; ?>" /></p>
 
                     <p><strong><?php _e('.htaccess file location', 'brute-force-login-protection'); ?></strong></p>
