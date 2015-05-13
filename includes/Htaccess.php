@@ -65,7 +65,7 @@ class Htaccess
         }
 
         if (empty($files)) {
-            $this->filesMatch = '.*';
+            $this->filesMatch = '.*\.(php|html?|css|js|jpe?g|png|gif)$';
         } else {
             $files = explode(',', $files);
 
