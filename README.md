@@ -1,9 +1,9 @@
 # Brute Force Login Protection
 
-[![Wordpress](https://img.shields.io/wordpress/plugin/dt/brute-force-login-protection.svg)](https://wordpress.org/plugins/brute-force-login-protection/)
-[![Wordpress plugin](https://img.shields.io/wordpress/plugin/v/brute-force-login-protection.svg)](https://wordpress.org/plugins/brute-force-login-protection/)
-[![Wordpress](https://img.shields.io/wordpress/v/brute-force-login-protection.svg)](https://wordpress.org/plugins/brute-force-login-protection/)
-[![Wordpress rating](https://img.shields.io/wordpress/plugin/r/brute-force-login-protection.svg)](https://wordpress.org/plugins/brute-force-login-protection/)
+[![Latest release](https://img.shields.io/wordpress/plugin/v/brute-force-login-protection.svg)](https://wordpress.org/plugins/brute-force-login-protection/)
+[![Tested up to](https://img.shields.io/wordpress/v/brute-force-login-protection.svg)](https://wordpress.org/plugins/brute-force-login-protection/)
+[![Downloads](https://img.shields.io/wordpress/plugin/dt/brute-force-login-protection.svg)](https://wordpress.org/plugins/brute-force-login-protection/)
+[![Rating](https://img.shields.io/wordpress/plugin/r/brute-force-login-protection.svg)](https://wordpress.org/plugins/brute-force-login-protection/)
 
 Protects your WordPress website against brute force login attacks using .htaccess
 
