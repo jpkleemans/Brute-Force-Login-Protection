@@ -10,7 +10,7 @@ require_once 'includes/htaccess.php';
  * Text Domain: brute-force-login-protection
  * Author: Fresh-Media
  * Author URI: http://fresh-media.nl/
- * Version: 1.5.1
+ * Version: 1.5.2
  * License: GPL2
  * 
  * Copyright 2014  Fresh-Media
