@@ -44,6 +44,12 @@ You can also create a thread in our [Support Forum](https://wordpress.org/suppor
 **Your feedback is highly appreciated!**
 
 ## Changelog
+### 1.5.2
+* Bugfix
+
+### 1.5.1
+* Security fix
+
 ### 1.5
 * Improved stability
 
