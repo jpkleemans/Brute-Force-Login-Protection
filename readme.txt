@@ -30,6 +30,9 @@ If you'd like to make a contribution to the Brute Force Login Protection plugin,
 You can also create a thread in our <a href="https://wordpress.org/support/plugin/brute-force-login-protection/">Support Forum</a>.
 **Your feedback is highly appreciated!**
 
+= Donate =
+If you'd like to make a donation to the Brute Force Login Protection plugin, you can do so via PayPal by clicking <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=WYG6F8B2BP5UL&lc=NL&item_name=Brute%20Force%20Login%20Protection&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted">here</a>.
+
 == Installation ==
 1. Install the plugin either via the WordPress.org plugin directory, or by uploading the files to your wp-content/plugin directory.
 2. Activate the plugin through the WordPress admin panel.

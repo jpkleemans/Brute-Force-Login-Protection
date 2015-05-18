@@ -43,6 +43,9 @@ If you'd like to make a contribution to the Brute Force Login Protection plugin,
 You can also create a thread in our [Support Forum](https://wordpress.org/support/plugin/brute-force-login-protection/).
 **Your feedback is highly appreciated!**
 
+## Donate
+If you'd like to make a donation to the Brute Force Login Protection plugin, you can do so via PayPal by clicking [here](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=WYG6F8B2BP5UL&lc=NL&item_name=Brute%20Force%20Login%20Protection&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted).
+
 ## Changelog
 ### 1.5.2
 * Bugfix
