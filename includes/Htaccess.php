@@ -17,6 +17,26 @@ class Htaccess
     private $filesMatch;
 
     /**
+     * 
+     * @var string
+     */
+    private $denyPrefix = 'deny from ';
+
+    /**
+     * Initialize denyPrefix for current Apache version
+     * 
+     * @return void
+     */
+    public function __construct()
+    {
+        $apache_version = preg_replace('/^.*?Apache\/(\d+[.]\d+).*?$/', '$1', apache_get_version());
+
+        if (version_compare($apache_version, "2.4", ">=")) {
+            $this->denyPrefix = 'Require not ip ';
+        }
+    }
+
+    /**
      * Get .htaccess lines before custom lines
      * 
      * @var array
@@ -25,7 +45,7 @@ class Htaccess
     {
         return array(
             '<FilesMatch "' . $this->filesMatch . '">',
-            'order deny,allow'
+            ($this->denyPrefix == 'deny from ' ? 'order deny,allow' : '')
         );
     }
 
@@ -117,7 +137,7 @@ class Htaccess
      */
     public function getDeniedIPs()
     {
-        $lines = $this->getLines('deny from ');
+        $lines = $this->getLines($this->denyPrefix);
 
         foreach ($lines as $key => $line) {
             $lines[$key] = substr($line, 10);
@@ -127,7 +147,7 @@ class Htaccess
     }
 
     /**
-     * Add 'deny from $IP' to .htaccess.
+     * Deny access for $IP in .htaccess.
      * 
      * @param string $IP
      * @return boolean
@@ -136,11 +156,11 @@ class Htaccess
     {
         if (!filter_var($IP, FILTER_VALIDATE_IP)) return false;
 
-        return $this->addLine('deny from ' . $IP);
+        return $this->addLine($this->denyPrefix . $IP);
     }
 
     /**
-     * Remove 'deny from $IP' from .htaccess.
+     * Remove denial of access for $IP in .htaccess.
      * 
      * @param string $IP
      * @return boolean
@@ -149,7 +169,7 @@ class Htaccess
     {
         if (!filter_var($IP, FILTER_VALIDATE_IP)) return false;
 
-        return $this->removeLine('deny from ' . $IP);
+        return $this->removeLine($this->denyPrefix . $IP);
     }
 
     /**
@@ -188,7 +208,7 @@ class Htaccess
      */
     public function commentLines()
     {
-        $currentLines = $this->getLines(array('deny from ', 'ErrorDocument 403 '));
+        $currentLines = $this->getLines(array($this->denyPrefix, 'ErrorDocument 403 '));
 
         $insertion = array();
         foreach ($currentLines as $line) {
@@ -205,7 +225,7 @@ class Htaccess
      */
     public function uncommentLines()
     {
-        $currentLines = $this->getLines(array('#deny from ', '#ErrorDocument 403 '));
+        $currentLines = $this->getLines(array('#' . $this->denyPrefix, '#ErrorDocument 403 '));
 
         $lines = array();
         foreach ($currentLines as $line) {
