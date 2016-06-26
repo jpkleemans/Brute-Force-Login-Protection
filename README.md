@@ -26,6 +26,16 @@ After a specified limit of login attempts within a specified time, the IP addres
 
 ## Installation
 1. Install the plugin either via the WordPress.org plugin directory, or by uploading the files to your wp-content/plugin directory.
+1a. `AllowOverride` must include `Limit` for this to work. 
+	E.g.
+	```
+	# /etc/apache2/apache2.conf
+	<Directory /var/www>
+    Options FollowSymLinks
+    AllowOverride FileInfo Limit
+    # AllowOverride All # another option, but less secure
+	</Directory>
+	```
 2. Activate the plugin through the WordPress admin panel.
 3. Customize the settings on the settings page.
 4. Done!
