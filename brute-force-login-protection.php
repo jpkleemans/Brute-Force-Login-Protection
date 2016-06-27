@@ -141,6 +141,7 @@ class BruteForceLoginProtection
     public function activate()
     {
         $this->setHtaccessPath();
+        $this->htaccess->setFilesMatch();        
         $this->htaccess->uncommentLines();
     }
 
