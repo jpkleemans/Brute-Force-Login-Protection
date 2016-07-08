@@ -1,9 +1,9 @@
 # Brute Force Login Protection
 
-[![Wordpress](https://img.shields.io/wordpress/plugin/dt/brute-force-login-protection.svg)](https://wordpress.org/plugins/brute-force-login-protection/)
-[![Wordpress plugin](https://img.shields.io/wordpress/plugin/v/brute-force-login-protection.svg)](https://wordpress.org/plugins/brute-force-login-protection/)
-[![Wordpress](https://img.shields.io/wordpress/v/brute-force-login-protection.svg)](https://wordpress.org/plugins/brute-force-login-protection/)
-[![Wordpress rating](https://img.shields.io/wordpress/plugin/r/brute-force-login-protection.svg)](https://wordpress.org/plugins/brute-force-login-protection/)
+[![Latest release](https://img.shields.io/wordpress/plugin/v/brute-force-login-protection.svg)](https://wordpress.org/plugins/brute-force-login-protection/)
+[![Tested up to](https://img.shields.io/wordpress/v/brute-force-login-protection.svg)](https://wordpress.org/plugins/brute-force-login-protection/)
+[![Downloads](https://img.shields.io/wordpress/plugin/dt/brute-force-login-protection.svg)](https://wordpress.org/plugins/brute-force-login-protection/)
+[![Rating](https://img.shields.io/wordpress/plugin/r/brute-force-login-protection.svg)](https://wordpress.org/plugins/brute-force-login-protection/)
 
 Protects your WordPress website against brute force login attacks using .htaccess
 
@@ -43,7 +43,16 @@ If you'd like to make a contribution to the Brute Force Login Protection plugin,
 You can also create a thread in our [Support Forum](https://wordpress.org/support/plugin/brute-force-login-protection/).
 **Your feedback is highly appreciated!**
 
+## Donate
+If you'd like to make a donation to the Brute Force Login Protection plugin, you can do so via PayPal by clicking [here](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=WYG6F8B2BP5UL&lc=NL&item_name=Brute%20Force%20Login%20Protection&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted).
+
 ## Changelog
+### 1.5.2
+* Bugfix
+
+### 1.5.1
+* Security fix
+
 ### 1.5
 * Improved stability
 
