@@ -44,10 +44,21 @@ If you don't have FTP access, the only way to unblock your IP is to log in your 
 = I get an error: .htaccess file not readable/writeable =
 Brute Force Login Protection will only work if your .htaccess file is writeable by WordPress. If you get this error, make sure that your .htaccess file has read and write permissions.
 
+= The IP of my web server was added to the blacklist =
+If your web server is behind a reverse proxy (like CloudFlare), the plugin will block the IP address of your proxy and not of the hacker.
+To fix this, you have to add the IP address(es) of your proxy to the whitelist on the settings page.
+
 == Screenshots ==
 1. Plugin settings page
 
 == Changelog ==
+= 2.0.0 =
+* Code rewrite
+* Change license to MIT
+* Add support for servers behind a reverse proxy
+* Add support for IP ranges
+* Add Italian translation
+
 = 1.5.2 =
 * Bugfix
 

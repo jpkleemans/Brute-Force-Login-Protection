@@ -1,0 +1,12 @@
+{
+    "require": {
+        "jpkleemans/htaccess-firewall": "dev-master",
+        "vectorface/whip": "^0.2.1",
+        "pimple/pimple": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "BFLP\\": "src/"
+        }
+    }
+}
