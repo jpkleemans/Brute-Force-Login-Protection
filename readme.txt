@@ -41,6 +41,9 @@ You can also create a thread in our <a href="https://wordpress.org/support/plugi
 If you have FTP access to your website edit the .htaccess file and remove the line: 'deny from x.x.x.x', where x.x.x.x is your own IP address.
 If you don't have FTP access, the only way to unblock your IP is to log in your WordPress admin panel from another IP address and unblock it via the plugin settings page.
 
+= I get an error: .htaccess file not found =
+Brute Force Login Protection will only work if you have a .htaccess file in the root of your WordPress site. If you get this error, try to re-save your permalinks. This will re-generate the .htaccess file.
+
 = I get an error: .htaccess file not readable/writeable =
 Brute Force Login Protection will only work if your .htaccess file is writeable by WordPress. If you get this error, make sure that your .htaccess file has read and write permissions.
 
