@@ -2,25 +2,44 @@
 
 namespace BFLP\Action;
 
+use BFLP\DataAccess\Settings;
+use BFLP\DataAccess\Whitelist;
+use BFLP\Util\RemoteAddress;
+use BFLP\Util\Renderer;
+use HtaccessFirewall\Filesystem\Exception\FilesystemException;
+use HtaccessFirewall\Host\Exception\InvalidArgumentException;
+use HtaccessFirewall\Host\IP;
+use HtaccessFirewall\HtaccessFirewall;
+
 class ShowSettingsPage
 {
+    /** @var HtaccessFirewall */
+    private $htaccess;
+
+    public function __construct(HtaccessFirewall $htaccess)
+    {
+        $this->htaccess = $htaccess;
+    }
+
     public function __invoke()
     {
         $this->handlePostRequest();
 
-        // Load options and show page
-        $this->fillOptions();
+        try {
+            $blockedIPs = $this->htaccess->getDenied();
+        } catch (FilesystemException $ex) {
+            $blockedIPs = array();
+        }
 
-        $this->renderer->template('settings', array(
+        Renderer::template('settings', array(
             'status' => array(
-                'exists' => $this->filesystem->exists(),
-                'readable' => $this->filesystem->readable(),
-                'writable' => $this->filesystem->writable()
+                'exists' => $this->htaccess->exists(),
+                'readable' => $this->htaccess->readable(),
+                'writable' => $this->htaccess->writable()
             ),
-            'settings' => [],
-            'blockedIPs' => [],
-            'whitelistedIPs' => [],
-            'currentIP' => ''
+            'settings' => Settings::all(),
+            'blockedIPs' => $blockedIPs,
+            'currentIP' => RemoteAddress::getClientIP(),
         ));
     }
 
@@ -30,78 +49,100 @@ class ShowSettingsPage
     private function handlePostRequest()
     {
         if (isset($_POST['IP'])) {
-            $IP = $_POST['IP'];
-
-            if (isset($_POST['block'])) { // Manually block IP
-                $this->manualBlockIP($IP);
-            } elseif (isset($_POST['unblock'])) { // Unblock IP
-                $this->manualUnblockIP($IP);
-            } elseif (isset($_POST['whitelist'])) { // Add IP to whitelist
-                $this->manualWhitelistIP($IP);
-            } elseif (isset($_POST['unwhitelist'])) { // Remove IP from whitelist
-                $this->manualUnwhitelistIP($IP);
+            try {
+                $IP = IP::fromString($_POST['IP']);
+            } catch (InvalidArgumentException $ex) {
+                Renderer::error(__('Invalid IP', 'brute-force-login-protection'));
+                return;
             }
-        } elseif (isset($_POST['reset'])) { // Reset options
-            $this->resetSettings();
+
+            if (isset($_POST['block'])) $this->blockIP($IP);
+            elseif (isset($_POST['unblock'])) $this->unblockIP($IP);
+            elseif (isset($_POST['whitelist'])) $this->whitelistIP($IP);
+            elseif (isset($_POST['unwhitelist'])) $this->unwhitelistIP($IP);
+        } elseif (isset($_POST['reset'])) {
+            $this->reset();
         }
     }
 
     /**
      * Block IP and show status message.
      *
-     * @param string $IP
+     * @param IP $IP
      */
     private function blockIP($IP)
     {
-        $whitelist = $this->whitelist->getAll();
-        if (in_array($IP, $whitelist)) {
-            $this->showError(sprintf(__('You can\'t block a whitelisted IP', 'brute-force-login-protection'), $IP));
-        } elseif ($this->htaccess->denyIP($IP)) {
-            $this->showMessage(sprintf(__('IP %s blocked', 'brute-force-login-protection'), $IP));
-        } else {
-            $this->showError(sprintf(__('An error occurred while blocking IP %s', 'brute-force-login-protection'), $IP));
+        $whitelist = Whitelist::all();
+        if (in_array($IP->toString(), $whitelist)) {
+            Renderer::error(sprintf(__('You can\'t block a whitelisted IP', 'brute-force-login-protection'), $IP));
+            return;
+        }
+
+        try {
+            $this->htaccess->deny($IP);
+            Renderer::message(sprintf(__('IP %s blocked', 'brute-force-login-protection'), $IP));
+        } catch (FilesystemException $ex) {
+            Renderer::error(sprintf(__('An error occurred while blocking IP %s', 'brute-force-login-protection'), $IP));
         }
     }
 
     /**
      * Unblock IP and show status message.
      *
-     * @param string $IP
+     * @param IP $IP
      */
     private function unblockIP($IP)
     {
-        if ($this->htaccess->undenyIP($IP)) {
-            $this->showMessage(sprintf(__('IP %s unblocked', 'brute-force-login-protection'), $IP));
-        } else {
-            $this->showError(sprintf(__('An error occurred while unblocking IP %s', 'brute-force-login-protection'), $IP));
+        try {
+            $this->htaccess->undeny($IP);
+            Renderer::message(sprintf(__('IP %s unblocked', 'brute-force-login-protection'), $IP));
+        } catch (FilesystemException $ex) {
+            Renderer::error(sprintf(__('An error occurred while unblocking IP %s', 'brute-force-login-protection'), $IP));
         }
     }
 
     /**
      * Add IP to whitelist and show status message.
      *
-     * @param string $IP
+     * @param IP $IP
      */
     private function whitelistIP($IP)
     {
-        if ($this->whitelist->add($IP) && $this->htaccess->undenyIP($IP)) {
-            $this->showMessage(sprintf(__('IP %s added to whitelist', 'brute-force-login-protection'), $IP));
+        try {
+            $this->htaccess->undeny($IP);
+        } catch (FilesystemException $ex) {
+            Renderer::error(sprintf(__('An error occurred while adding IP %s to whitelist', 'brute-force-login-protection'), $IP));
+        }
+
+        if (Whitelist::add($IP)) {
+            Renderer::message(sprintf(__('IP %s added to whitelist', 'brute-force-login-protection'), $IP));
         } else {
-            $this->showError(sprintf(__('An error occurred while adding IP %s to whitelist', 'brute-force-login-protection'), $IP));
+            Renderer::error(sprintf(__('An error occurred while adding IP %s to whitelist', 'brute-force-login-protection'), $IP));
         }
     }
 
     /**
      * Remove IP from whitelist and show status message.
      *
-     * @param string $IP
+     * @param IP $IP
      */
     private function unwhitelistIP($IP)
     {
-        if ($this->whitelist->remove($IP)) {
-            $this->showMessage(sprintf(__('IP %s removed from whitelist', 'brute-force-login-protection'), $IP));
+        if (Whitelist::remove($IP)) {
+            Renderer::message(sprintf(__('IP %s removed from whitelist', 'brute-force-login-protection'), $IP));
         } else {
-            $this->showError(sprintf(__('An error occurred while removing IP %s from whitelist', 'brute-force-login-protection'), $IP));
+            Renderer::error(sprintf(__('An error occurred while removing IP %s from whitelist', 'brute-force-login-protection'), $IP));
+        }
+    }
+
+    private function reset()
+    {
+        Settings::reset();
+
+        try {
+            $this->htaccess->remove403Message();
+        } catch (FilesystemException $ex) {
+            Renderer::error(__('An error occurred while resetting the blocked user message', 'brute-force-login-protection'));
         }
     }
 }

@@ -79,54 +79,26 @@
 
         <div class="postbox">
             <h3><?php _e('Options', 'brute-force-login-protection'); ?></h3>
-            <form method="post" action="">
+            <form method="post" action="options.php">
+                <?php settings_fields('brute-force-login-protection'); ?>
                 <div class="inside">
-                    <p>
-                        <strong><?php _e('Allowed login attempts before blocking IP', 'brute-force-login-protection'); ?></strong>
-                    </p>
-                    <p>
-                        <input type="number" min="1" max="100" name="allowed_attempts" value="<?php echo $settings['allowed_attempts']; ?>"/>
-                    </p>
+                    <p><strong><?php _e('Allowed login attempts before blocking IP', 'brute-force-login-protection'); ?></strong></p>
+                    <p><input type="number" min="1" max="100" name="bflp_allowed_attempts" value="<?php echo $settings['allowed_attempts']; ?>"/></p>
 
-                    <p>
-                        <strong><?php _e('Minutes before resetting login attempts count', 'brute-force-login-protection'); ?></strong>
-                    </p>
-                    <p>
-                        <input type="number" min="1" name="reset_time" value="<?php echo $settings['reset_time']; ?>"/>
-                    </p>
+                    <p><strong><?php _e('Minutes before resetting login attempts count', 'brute-force-login-protection'); ?></strong></p>
+                    <p><input type="number" min="1" name="bflp_reset_time" value="<?php echo $settings['reset_time']; ?>"/></p>
 
-                    <p>
-                        <strong><?php _e('Delay in seconds when a login attempt has failed (to slow down brute force attack)', 'brute-force-login-protection'); ?></strong>
-                    </p>
-                    <p>
-                        <input type="number" min="1" max="10" name="login_failed_delay" value="<?php echo $settings['login_failed_delay']; ?>"/>
-                    </p>
+                    <p><strong><?php _e('Delay in seconds when a login attempt has failed (to slow down brute force attack)', 'brute-force-login-protection'); ?></strong></p>
+                    <p><input type="number" min="1" max="10" name="bflp_login_failed_delay" value="<?php echo $settings['login_failed_delay']; ?>"/></p>
 
-                    <p>
-                        <strong><?php _e('Inform user about remaining login attempts on login page', 'brute-force-login-protection'); ?></strong>
-                    </p>
-                    <p>
-                        <input type="checkbox" name="inform_user" value="true" <?php echo ($settings['inform_user']) ? 'checked' : ''; ?> />
-                    </p>
+                    <p><strong><?php _e('Inform user about remaining login attempts on login page', 'brute-force-login-protection'); ?></strong></p>
+                    <p><input type="checkbox" name="bflp_inform_user" value="true" <?php echo ($settings['inform_user']) ? 'checked' : ''; ?> /></p>
 
-                    <p>
-                        <strong><?php _e('Send email to administrator when an IP has been blocked (don\'t use this on a slow server)', 'brute-force-login-protection'); ?></strong>
-                    </p>
-                    <p>
-                        <input type="checkbox" name="send_email" value="true" <?php echo ($settings['send_email']) ? 'checked' : ''; ?> />
-                    </p>
+                    <p><strong><?php _e('Send email to administrator when an IP has been blocked (don\'t use this on a slow server)', 'brute-force-login-protection'); ?></strong></p>
+                    <p><input type="checkbox" name="bflp_send_email" value="true" <?php echo ($settings['send_email']) ? 'checked' : ''; ?> /></p>
 
-                    <p>
-                        <strong><?php _e('Message to show to blocked users (leave empty for default message)', 'brute-force-login-protection'); ?></strong>
-                    </p>
-                    <p>
-                        <input type="text" size="70" name="403_message" value="<?php echo $settings['403_message']; ?>"/>
-                    </p>
-
-                    <p><strong><?php _e('.htaccess file location', 'brute-force-login-protection'); ?></strong></p>
-                    <p>
-                        <input type="text" size="70" name="htaccess_dir" value="<?php echo $settings['htaccess_dir']; ?>"/>
-                    </p>
+                    <p><strong><?php _e('Message to show to blocked users (leave empty for default message)', 'brute-force-login-protection'); ?></strong></p>
+                    <p><input type="text" size="70" name="bflp_403_message" value="<?php echo $settings['403_message']; ?>"/></p>
                 </div>
                 <div class="postbox-footer">
                     <?php submit_button(__('Save', 'brute-force-login-protection'), 'primary', 'submit', false); ?>
@@ -191,7 +163,7 @@
         <tbody>
             <?php
             $i = 1;
-            foreach ($whitelistedIPs as $whitelistedIP):
+            foreach ($settings['whitelist'] as $whitelistedIP):
                 ?>
                 <tr <?php echo ($i % 2 == 0) ? 'class="even"' : ''; ?>>
                     <td><?php echo $i; ?></td>
@@ -215,7 +187,7 @@
                     </td>
                     <td>
                         <input type="submit" name="whitelist" value="<?php _e('Add to whitelist', 'brute-force-login-protection'); ?>" class="button button-primary"/>
-                        <?php if (!in_array($currentIP, $whitelist)): ?>
+                        <?php if (!in_array($currentIP, $settings['whitelist'])): ?>
                             &nbsp;
                             <a href="javascript:whitelistCurrentIP()" class="button"><?php printf(__('Whitelist my current IP (%s)', 'brute-force-login-protection'), $currentIP); ?></a>
                         <?php endif; ?>

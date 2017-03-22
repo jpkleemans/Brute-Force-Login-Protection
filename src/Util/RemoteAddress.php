@@ -9,8 +9,8 @@ class RemoteAddress
      *
      * @return string IP address.
      */
-    public function getIpAddress()
+    public static function getClientIP()
     {
-        //
+        return $_SERVER['REMOTE_ADDR'];
     }
 }

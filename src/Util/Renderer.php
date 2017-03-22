@@ -12,7 +12,7 @@ class Renderer
      *
      * @return void
      */
-    public function template($name, $options)
+    public static function template($name, $options)
     {
         extract($options);
         include __DIR__ . '/../../templates/' . $name . '.php';
@@ -26,7 +26,7 @@ class Renderer
      *
      * @return void
      */
-    public function message($message, $class = 'updated')
+    public static function message($message, $class = 'updated')
     {
         echo '<div class="' . $class . '"><p>' . $message . '</p></div>';
     }
@@ -38,8 +38,8 @@ class Renderer
      *
      * @return void
      */
-    public function error($message)
+    public static function error($message)
     {
-        $this->message($message, 'error');
+        self::message($message, 'error');
     }
 }

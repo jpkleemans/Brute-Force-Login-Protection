@@ -7,7 +7,7 @@
  * Text Domain: brute-force-login-protection
  * Author: Fresh-Media
  * Author URI: http://fresh-media.nl/
- * Version: 2.0.0-beta
+ * Version: 2.0.0
  * License: MIT
  *
  * The MIT License (MIT)
@@ -35,5 +35,25 @@
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-// Bootstrap plugin
-new \BFLP\Bootstrap;
+// Load actions
+$actions = new \BFLP\Actions;
+
+// Hook activation and deactivation actions
+register_activation_hook(__FILE__, array($actions, 'activate'));
+register_deactivation_hook(__FILE__, array($actions, 'deactivate'));
+
+// Hook internationalization action
+add_action('plugins_loaded', array($actions, 'loadTextdomain'));
+
+// Hook admin actions
+add_action('admin_init', array($actions, 'registerSettings'));
+add_action('admin_menu', array($actions, 'addSettingsPage'));
+add_action('admin_notices', array($actions, 'showRequirementsErrors'));
+
+// Hook login form actions
+add_action('wp_login_failed', array($actions, 'loginFailed'));
+add_action('wp_login', array($actions, 'loginSucceeded'));
+
+// Hook auth cookie actions
+add_action('auth_cookie_bad_username', array($actions, 'loginFailed'));
+add_action('auth_cookie_bad_hash', array($actions, 'loginFailed'));

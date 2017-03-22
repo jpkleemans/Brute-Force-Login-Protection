@@ -2,94 +2,46 @@
 
 namespace BFLP\Action;
 
+use BFLP\DataAccess\Attempts;
+use BFLP\DataAccess\Settings;
+use BFLP\DataAccess\Whitelist;
 use BFLP\Util\RemoteAddress;
-use BFLP\Repository\LoginAttemptRepository;
-use BFLP\Repository\SettingRepository;
-use BFLP\Repository\Whitelist;
-use HtaccessFirewall\Firewall\HtaccessFirewall;
 use HtaccessFirewall\Host\IP;
+use HtaccessFirewall\HtaccessFirewall;
 
 class LoginFailed
 {
-    /**
-     * @var RemoteAddress
-     */
-    private $remoteAddress;
-
-    /**
-     * @var Whitelist
-     */
-    private $whitelist;
-
-    /**
-     * @var HtaccessFirewall
-     */
+    /** @var HtaccessFirewall */
     private $htaccess;
 
-    /**
-     * @var LoginAttemptRepository
-     */
-    private $loginAttempts;
-
-    /**
-     * @var SettingRepository
-     */
-    private $settings;
-
-    /**
-     * LoginController constructor.
-     *
-     * @param RemoteAddress $remoteAddress
-     * @param Whitelist $whitelist
-     * @param HtaccessFirewall $htaccess
-     * @param LoginAttemptRepository $loginAttempts
-     * @param SettingRepository $settings
-     */
-    public function __construct(RemoteAddress $remoteAddress,
-                                Whitelist $whitelist,
-                                HtaccessFirewall $htaccess,
-                                LoginAttemptRepository $loginAttempts,
-                                SettingRepository $settings)
+    public function __construct(HtaccessFirewall $htaccess)
     {
-        $this->remoteAddress = $remoteAddress;
-        $this->whitelist = $whitelist;
         $this->htaccess = $htaccess;
-        $this->loginAttempts = $loginAttempts;
-        $this->settings = $settings;
     }
 
     public function __invoke()
     {
-        $ip = $this->remoteAddress->getIpAddress();
+        $IP = RemoteAddress::getClientIP();
+        if (Whitelist::has($IP)) return;
 
-        if ($this->whitelist->has($ip)) {
-            return;
-        }
-
-        $settings = $this->settings->getAll();
-
+        $settings = Settings::all();
         sleep($settings['login_failed_delay']);
 
-        $attempt = $this->loginAttempts->get($ip);
-
-        $currentTime = time();
-
-        if ($attempt == null) {
-            $attempt = array('count' => 1);
-        } elseif ($attempt['last_failed_login'] > ($currentTime - ($settings['reset_time'] * 60))) {
+        $attempt = Attempts::get($IP);
+        if ($attempt['last_failed_login'] > (time() - ($settings['reset_time'] * 60))) {
             $attempt['count'] = 1;
         } else {
             $attempt['count']++;
         }
 
-        // Block if IP has reached max failed login attempts
+        // Block if IP has reached max failed login attempts.
         if ($attempt['count'] >= $settings['allowed_attempts']) {
-            $this->blockIP($ip, $settings['send_email'], $settings['403_message']);
+            Attempts::remove($IP);
+            $this->blockIP($IP, $settings['send_email'], $settings['403_message']);
             return;
         }
 
-        $attempt['last_failed_login'] = $currentTime;
-        $this->loginAttempts->addOrUpdate($ip, $attempt);
+        Attempts::update($attempt);
 
         if ($settings['inform_user']) {
             global $error;
@@ -102,19 +54,15 @@ class LoginFailed
     /**
      * Block IP with .htaccess.
      *
-     * @param string $ip
+     * @param string $IP
      * @param bool $sendEmail
      * @param string $message
      */
-    private function blockIP($ip, $sendEmail = false, $message = '')
+    private function blockIP($IP, $sendEmail = false, $message = '')
     {
-        $this->loginAttempts->remove($ip);
+        if ($sendEmail) $this->sendEmail($IP);
 
-        if ($sendEmail) {
-            $this->sendEmail($ip);
-        }
-
-        $this->htaccess->deny(IP::fromString($ip));
+        $this->htaccess->deny(IP::fromString($IP));
 
         status_header(403);
         wp_die($message);
