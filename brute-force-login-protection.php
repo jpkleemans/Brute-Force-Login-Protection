@@ -190,12 +190,12 @@ function bflp_login_succeeded()
  */
 function bflp_register_settings()
 {
-    register_setting('brute-force-login-protection', 'bflp_allowed_attempts', array($this, 'validateAllowedAttempts'));
-    register_setting('brute-force-login-protection', 'bflp_reset_time', array($this, 'validateResetTime'));
-    register_setting('brute-force-login-protection', 'bflp_login_failed_delay', array($this, 'validateLoginFailedDelay'));
+    register_setting('brute-force-login-protection', 'bflp_allowed_attempts', 'bflp_validate_allowed_attempts');
+    register_setting('brute-force-login-protection', 'bflp_reset_time', 'bflp_validate_reset_time');
+    register_setting('brute-force-login-protection', 'bflp_login_failed_delay', 'bflp_validate_login_failed_delay');
     register_setting('brute-force-login-protection', 'bflp_inform_user');
     register_setting('brute-force-login-protection', 'bflp_send_email');
-    register_setting('brute-force-login-protection', 'bflp_403_message', array($this, 'validate403Message'));
+    register_setting('brute-force-login-protection', 'bflp_403_message', 'bflp_validate_403_message');
 }
 
 /*
