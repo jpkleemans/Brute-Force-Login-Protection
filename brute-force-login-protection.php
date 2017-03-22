@@ -94,11 +94,11 @@ function bflp_activate()
     $charset = $wpdb->get_charset_collate();
 
     $sql = "CREATE TABLE $table_name (
-                  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                  ip VARCHAR(50) NOT NULL,
-                  count INT NOT NULL,
-                  last_failed_at DATETIME NOT NULL
-                ) $charset;";
+              id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+              ip VARCHAR(50) NOT NULL,
+              count INT NOT NULL,
+              last_failed_at DATETIME NOT NULL
+            ) $charset;";
 
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     dbDelta($sql);
