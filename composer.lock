@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "a52b53e5f3ce967f4b4c8bd1e55993f3",
-    "content-hash": "9430b7dea73844b7adb19dffe4822334",
+    "hash": "f4a561972791de3f2f388640c86279d2",
+    "content-hash": "93948df4f47e16e6b2fdb2ac0889d682",
     "packages": [
         {
             "name": "jpkleemans/htaccess-firewall",
@@ -13,12 +13,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/jpkleemans/htaccess-firewall.git",
-                "reference": "a71ff08ed8d2e722a37a48f876159bd0a992929c"
+                "reference": "4fad5d79ca3daec3526365dfe9b68fbddad2a41a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jpkleemans/htaccess-firewall/zipball/a71ff08ed8d2e722a37a48f876159bd0a992929c",
-                "reference": "a71ff08ed8d2e722a37a48f876159bd0a992929c",
+                "url": "https://api.github.com/repos/jpkleemans/htaccess-firewall/zipball/4fad5d79ca3daec3526365dfe9b68fbddad2a41a",
+                "reference": "4fad5d79ca3daec3526365dfe9b68fbddad2a41a",
                 "shasum": ""
             },
             "require": {
@@ -54,109 +54,7 @@
                 "firewall",
                 "htaccess"
             ],
-            "time": "2017-03-22 08:40:27"
-        },
-        {
-            "name": "pimple/pimple",
-            "version": "v3.0.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/silexphp/Pimple.git",
-                "reference": "a30f7d6e57565a2e1a316e1baf2a483f788b258a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/silexphp/Pimple/zipball/a30f7d6e57565a2e1a316e1baf2a483f788b258a",
-                "reference": "a30f7d6e57565a2e1a316e1baf2a483f788b258a",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.0"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "3.0.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-0": {
-                    "Pimple": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                }
-            ],
-            "description": "Pimple, a simple Dependency Injection Container",
-            "homepage": "http://pimple.sensiolabs.org",
-            "keywords": [
-                "container",
-                "dependency injection"
-            ],
-            "time": "2015-09-11 15:10:35"
-        },
-        {
-            "name": "vectorface/whip",
-            "version": "v0.3.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Vectorface/whip.git",
-                "reference": "65e2e04f954c5f97d7d0658e82c31062fe4cb96f"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Vectorface/whip/zipball/65e2e04f954c5f97d7d0658e82c31062fe4cb96f",
-                "reference": "65e2e04f954c5f97d7d0658e82c31062fe4cb96f",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "~4.0",
-                "psr/http-message": "~1.0",
-                "squizlabs/php_codesniffer": "~2.0",
-                "vectorface/dunit": "~2.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Vectorface\\Whip\\": "./src",
-                    "VectorFace\\Whip\\": "./src",
-                    "Vectorface\\WhipTests\\": "./tests"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Bruce",
-                    "email": "dbruce@vectorface.com",
-                    "role": "Developer"
-                },
-                {
-                    "name": "Cory Darby",
-                    "email": "ckdarby@vectorface.com",
-                    "role": "Developer"
-                }
-            ],
-            "description": "A PHP class for retrieving accurate IP address information for the client.",
-            "homepage": "https://github.com/Vectorface/whip",
-            "keywords": [
-                "IP",
-                "cdn",
-                "cloudflare"
-            ],
-            "time": "2016-01-27 17:25:06"
+            "time": "2017-03-22 17:22:04"
         }
     ],
     "packages-dev": [],

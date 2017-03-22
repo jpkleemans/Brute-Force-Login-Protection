@@ -1,8 +1,6 @@
 {
     "require": {
-        "jpkleemans/htaccess-firewall": "dev-master",
-        "vectorface/whip": "^0.3",
-        "pimple/pimple": "^3.0"
+        "jpkleemans/htaccess-firewall": "dev-master"
     },
     "autoload": {
         "psr-4": {
