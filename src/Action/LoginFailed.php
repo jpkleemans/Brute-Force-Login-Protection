@@ -28,7 +28,7 @@ class LoginFailed
         sleep($settings['login_failed_delay']);
 
         $attempt = Attempts::get($IP);
-        if ($attempt['last_failed_login'] > (time() - ($settings['reset_time'] * 60))) {
+        if ($attempt['last_failed_at'] > (time() - ($settings['reset_time'] * 60))) {
             $attempt['count'] = 1;
         } else {
             $attempt['count']++;

@@ -1,7 +1,7 @@
 === Brute Force Login Protection ===
 Contributors: Jan-Paul Kleemans
 Tags: brute force, bruteforce, login, wp-login, protection, shield, security, htaccess, block, ip
-Requires at least: 2.7.0
+Requires at least: 3.5.0
 Tested up to: 4.2.2
 Stable tag: 1.5.2
 License: GPL2
