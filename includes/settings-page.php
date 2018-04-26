@@ -17,6 +17,16 @@
     .brute-force-login-protection tr.even {
         background-color:#f5f5f5;
     }
+
+    .brute-force-login-protection th,
+    .brute-force-login-protection table{
+        border-bottom: 1px solid #e1e1e1 !important;
+    }
+    
+    .brute-force-login-protection tfoot,
+    .brute-force-login-protection tfoot td{
+        border-top: 1px solid #e1e1e1 !important;
+    }
 </style>
 
 <script type="text/javascript">
@@ -104,7 +114,7 @@
     </div>
 
     <h3><?php _e('Blocked IPs', 'brute-force-login-protection'); ?></h3>
-    <table class="wp-list-table widefat fixed">
+    <table id="blockedIp" data-order='[[0,"desc"]]' class="wp-list-table widefat fixed">
         <thead>
             <tr>
                 <th width="5%">#</th>
@@ -131,22 +141,24 @@
                 $i++;
             endforeach;
             ?>
-            <tr <?php echo ($i % 2 == 0) ? 'class="even"' : ''; ?>>
-                <td><?php echo $i; ?></td>
-        <form method="post" action="">
-            <td>
-                <input type="text" name="IP" placeholder="<?php _e('IP to block', 'brute-force-login-protection'); ?>" required />
-            </td>
-            <td>
-                <input type="submit" name="block" value="<?php _e('Manually block IP', 'brute-force-login-protection'); ?>" class="button button-primary" />
-            </td>
-        </form>
-        </tr>
         </tbody>
+        <tfoot>
+            <tr>
+                <td>&nbsp;</td>
+                <form method="post" action="">
+                    <td>
+                        <input type="text" name="IP" placeholder="<?php _e('IP to block', 'brute-force-login-protection'); ?>" required />
+                    </td>
+                    <td>
+                        <input type="submit" name="block" value="<?php _e('Manually block IP', 'brute-force-login-protection'); ?>" class="button button-primary" />
+                    </td>
+                </form>
+            </tr>
+        </tfoot>
     </table>
 
     <h3><?php _e('Whitelisted IPs', 'brute-force-login-protection'); ?></h3>
-    <table class="wp-list-table widefat fixed">
+    <table id="whiteList" data-order='[[0,"desc"]]' class="wp-list-table widefat fixed">
         <thead>
             <tr>
                 <th width="5%">#</th>
@@ -176,21 +188,23 @@
                 $i++;
             endforeach;
             ?>
-            <tr <?php echo ($i % 2 == 0) ? 'class="even"' : ''; ?>>
-                <td><?php echo $i; ?></td>
-        <form method="post" action="">
-            <td>
-                <input type="text" name="IP" placeholder="<?php _e('IP to whitelist', 'brute-force-login-protection'); ?>" required />
-            </td>
-            <td>
-                <input type="submit" name="whitelist" value="<?php _e('Add to whitelist', 'brute-force-login-protection'); ?>" class="button button-primary" />
-                <?php if (!in_array($currentIP, $whitelist)): ?>
-                    &nbsp;<a href="javascript:WhitelistCurrentIP()" class="button"><?php printf(__('Whitelist my current IP (%s)', 'brute-force-login-protection'), $currentIP); ?></a>
-                <?php endif; ?>
-            </td>
-        </form>
-        </tr>
         </tbody>
+        <tfoot>
+            <tr>
+                <td>&nbsp;</td>
+                <form method="post" action="">
+                    <td>
+                        <input type="text" name="IP" placeholder="<?php _e('IP to whitelist', 'brute-force-login-protection'); ?>" required />
+                    </td>
+                    <td>
+                        <input type="submit" name="whitelist" value="<?php _e('Add to whitelist', 'brute-force-login-protection'); ?>" class="button button-primary" />
+                        <?php if (!in_array($currentIP, $whitelist)): ?>
+                            &nbsp;<a href="javascript:WhitelistCurrentIP()" class="button"><?php printf(__('Whitelist my current IP (%s)', 'brute-force-login-protection'), $currentIP); ?></a>
+                        <?php endif; ?>
+                    </td>
+                </form>
+            </tr>
+        </tfoot>
     </table>
 
     <form id="reset_form" method="post" action="">
@@ -202,3 +216,5 @@
         <input type="hidden" name="IP" value="<?php echo $currentIP; ?>" />
     </form>
 </div>
+
+<?php include 'data-table.php' ?>
